@@ -210,7 +210,7 @@
         let unsubscribePhotos = null;
         let configRef, photosRef;
 
-        let siteContent = {
+        const defaultSiteContent = {
             coupleNames: "김창회 & 김한별", welcomeMessage: "두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!",
             rewardMessage: "오늘을 평생 기억하게 될 신랑 신부에게 영원한 선물을 전해주세요!", welcomeImage: null,
             theme: { primaryColor: '#BEB2A7', fontFamily: "'Gowun Dodum', sans-serif" },
@@ -227,6 +227,7 @@
                 { id: 10, title: "자유 포토! 당신의 시선", description: "당신의 눈에 담긴 결혼식의 어떤 순간이든 자유롭게 공유해주세요." }
             ]
         };
+        let siteContent = JSON.parse(JSON.stringify(defaultSiteContent));
         let uploadedPhotos = [];
 
         const dom = Object.fromEntries(Array.from(document.querySelectorAll('[id]')).map(el => [el.id.replace(/-(\w)/g, (m, p1) => p1.toUpperCase()), el]));
@@ -237,34 +238,27 @@
         const lightenColor = (hex,p) => {let [r,g,b]=hex.match(/\w\w/g).map(x=>parseInt(x,16)),f=p/100;r=Math.min(255,Math.floor(r+(255-r)*f));g=Math.min(255,Math.floor(g+(255-g)*f));b=Math.min(255,Math.floor(b+(255-b)*f));return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`};
         const applyTheme = (theme) => { const r=document.documentElement.style;r.setProperty('--primary-color',theme.primaryColor);r.setProperty('--primary-color-dark',darkenColor(theme.primaryColor,10));r.setProperty('--primary-color-accent',lightenColor(theme.primaryColor,15));r.setProperty('--primary-color-light-bg',lightenColor(theme.primaryColor,95));r.setProperty('--font-family',theme.fontFamily);};
         
-        const loadData = async () => {
-            console.log("Attempting to load data from Firestore...");
+        const initializeAppContent = async () => {
             try {
                 const docSnap = await getDoc(configRef);
                 if (docSnap.exists()) {
-                    console.log("Config document found. Merging with defaults.");
                     const savedData = docSnap.data();
-                    // Robustly merge data to prevent errors from incomplete objects
                     siteContent = {
-                        ...siteContent,
+                        ...defaultSiteContent,
                         ...savedData,
-                        theme: {
-                            ...siteContent.theme,
-                            ...(savedData.theme || {}),
-                        },
+                        theme: { ...defaultSiteContent.theme, ...(savedData.theme || {}) },
                         missions: (Array.isArray(savedData.missions) && savedData.missions.length > 0)
                             ? savedData.missions
-                            : siteContent.missions,
+                            : defaultSiteContent.missions,
                     };
                 } else {
-                    console.log("No config document found. Creating a new one with default data.");
-                    await setDoc(configRef, siteContent);
+                    await setDoc(configRef, defaultSiteContent);
                 }
-                 console.log("Data loaded successfully.");
             } catch (error) { 
-                console.error("Critical error during config load:", error);
-                showToast("데이터 로딩에 실패했습니다.");
+                console.error("Error during initial data load:", error);
+                showToast("데이터 로딩 중 오류가 발생했습니다. 기본 설정으로 시작합니다.");
             }
+            
             userName = localStorage.getItem('weddingMissionUserName') || '';
             updateUI();
             listenForPhotos();
@@ -562,33 +556,24 @@
         
         // --- Initial Load ---
         try {
-            console.log("Firebase config loaded.");
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            console.log("Firebase services initialized.");
 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wedding-app';
             configRef = doc(db, `/artifacts/${appId}/public/data/config`, "main");
             photosRef = collection(db, `/artifacts/${appId}/public/data/photos`);
 
             onAuthStateChanged(auth, async (user) => {
-                try {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("Auth state changed. User authenticated with UID:", userId);
-                        await loadData();
-                        checkAdminMode();
-                    } else {
-                        console.log("No user found, attempting sign-in.");
-                        const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                        if (token) { await signInWithCustomToken(auth, token); }
-                        else { await signInAnonymously(auth); }
-                    }
-                } catch(e) {
-                     console.error("Error within onAuthStateChanged callback:", e);
-                     dom.loadingOverlay.innerHTML = "<p>오류가 발생했습니다. 새로고침 해주세요.</p>";
+                if (user) {
+                    userId = user.uid;
+                    await initializeAppContent();
+                    checkAdminMode();
+                } else {
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) { await signInWithCustomToken(auth, token); }
+                    else { await signInAnonymously(auth); }
                 }
             });
         } catch(e) {
