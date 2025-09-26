@@ -9,12 +9,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Stylish&display=swap" rel="stylesheet">
     <style>
-        /* CSS 변수를 사용하여 테마 관리 */
         :root {
-            --primary-color: #BEB2A7; /* Ash Beige default */
-            --primary-color-dark: #A99E94; /* Darker Ash Beige */
-            --primary-color-accent: #D2C8BF; /* Lighter Ash Beige */
-            --primary-color-light-bg: #F5F2EF; /* Very Light Ash Beige */
+            --primary-color: #BEB2A7;
+            --primary-color-dark: #A99E94;
+            --primary-color-accent: #D2C8BF;
+            --primary-color-light-bg: #F5F2EF;
             --font-family: 'Gowun Dodum', sans-serif;
         }
         body {
@@ -26,72 +25,44 @@
         .text-primary { color: var(--primary-color); }
         .text-primary-accent { color: var(--primary-color-accent); }
         .border-primary { border-color: var(--primary-color); }
-        .focus\:ring-primary:focus {
-            --tw-ring-color: var(--primary-color);
+        .focus\:ring-primary:focus { --tw-ring-color: var(--primary-color); }
+        .focus\:border-primary:focus { border-color: var(--primary-color); }
+        .bg-primary-light-bg { background-color: var(--primary-color-light-bg) !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 110; left: 50%; bottom: 30px; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, visibility 0.3s, bottom 0.3s; }
+        .toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        .admin-fab { position: fixed; bottom: 20px; right: 20px; z-index: 90; }
+        .tab-active { color: var(--primary-color); border-color: var(--primary-color); border-bottom-width: 2px; }
+        .tab-inactive { color: #6b7280; }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid var(--primary-color); /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: auto;
         }
-        .focus\:border-primary:focus {
-            border-color: var(--primary-color);
-        }
-        .bg-primary-light-bg {
-            background-color: var(--primary-color-light-bg) !important;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 110;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s, bottom 0.3s;
-        }
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px;
-        }
-        .admin-fab {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 90;
-        }
-        .tab-active {
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-            border-bottom-width: 2px;
-        }
-        .tab-inactive {
-            color: #6b7280; /* text-gray-500 */
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-gray-800">
 
     <div id="app-container" class="max-w-lg mx-auto min-h-screen bg-white shadow-lg relative">
+        
+        <!-- Loading Spinner -->
+        <div id="loading-overlay" class="absolute inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
+            <div class="loader"></div>
+            <p class="mt-4 text-gray-600">연결 중입니다...</p>
+        </div>
 
         <!-- Welcome Screen -->
-        <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center">
-            <div id="welcome-icon-container" class="mb-8 w-24 h-24 flex items-center justify-center">
-                <!-- Icon or Image will be injected here by JavaScript -->
-            </div>
-            <h1 id="couple-names" class="text-3xl font-bold text-gray-800 mb-2">김창회 & 김한별</h1>
+        <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center hidden">
+            <div id="welcome-icon-container" class="mb-8 w-24 h-24 flex items-center justify-center"></div>
+            <h1 id="couple-names" class="text-3xl font-bold text-gray-800 mb-2"></h1>
             <p class="text-lg text-gray-600 mb-8">Wedding Photo Mission</p>
-            <p id="welcome-message" class="mb-10">두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!</p>
+            <p id="welcome-message" class="mb-10"></p>
             <button id="start-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
                 참여하기
             </button>
@@ -101,7 +72,7 @@
         <div id="main-screen" class="hidden p-4 pb-20">
             <header class="text-center py-4">
                 <h1 class="text-2xl font-bold text-primary">Wedding Photo Mission</h1>
-                <p id="mission-reward-message" class="text-gray-500 mt-1">미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!</p>
+                <p id="mission-reward-message" class="text-gray-500 mt-1"></p>
             </header>
 
             <div class="flex justify-center border-b-2 border-gray-200 mb-4">
@@ -110,36 +81,35 @@
                 <button id="gallery-tab" class="flex-1 py-3 text-center font-semibold tab-inactive">실시간 갤러리</button>
             </div>
 
-            <div id="missions-view">
-                <div id="mission-list" class="space-y-3"></div>
-            </div>
-            
+            <div id="missions-view"><div id="mission-list" class="space-y-3"></div></div>
             <div id="gift-view" class="hidden text-center p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-primary-accent mb-4"><path d="M20 12v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4"></path><path d="m18 5 4 4"></path><path d="m18 9-4-4"></path><path d="M12 12H8v4h4Z"></path><path d="M12 8H8v4h4Z"></path><path d="M16 12h-4v4h4Z"></path></svg>
                 <h2 class="text-xl font-bold mb-2">사진 선물하기</h2>
                 <p class="text-gray-600 mb-6">미션과 관계없이, 두 사람에게 선물하고 싶은<br>결혼식의 모든 순간을 자유롭게 공유해주세요.</p>
-                <button id="gift-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
-                    사진 올리기
-                </button>
+                <button id="gift-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">사진 올리기</button>
             </div>
-
             <div id="gallery-view" class="hidden">
                 <p id="gallery-placeholder" class="text-center text-gray-500 py-16">아직 공유된 사진이 없어요.<br>첫 번째 사진을 올려주세요!</p>
                 <div id="gallery-grid" class="grid grid-cols-3 gap-1"></div>
             </div>
         </div>
-
-        <!-- Upload Modal -->
+        
+        <div id="name-entry-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-sm p-6 fade-in">
+                <h2 class="text-xl font-bold mb-4">참여하기</h2><p class="text-gray-600 mb-4">사진을 올리실 이름을 입력해주세요.</p>
+                <input type="text" id="name-entry-input" placeholder="이름 (예: 김창회)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-primary focus:border-primary">
+                <button id="name-entry-submit-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">입장하기</button>
+            </div>
+        </div>
         <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
             <div class="bg-white rounded-lg w-full max-w-sm p-6 fade-in">
-                <h2 id="modal-title" class="text-xl font-bold mb-4">미션 사진 업로드</h2>
-                <div id="image-preview-container" class="w-full h-32 flex items-center justify-center rounded-md mb-4 border bg-gray-100 overflow-hidden">
-                    <p id="image-preview-text" class="text-gray-500"></p>
+                <h2 id="modal-title" class="text-xl font-bold mb-4"></h2>
+                <div id="image-preview-container" class="w-full h-32 flex items-center justify-center rounded-md mb-4 border bg-gray-100 overflow-hidden"><p id="image-preview-text" class="text-gray-500"></p></div>
+                <div id="message-input-container" class="hidden mb-4">
+                     <label for="upload-message" class="block text-sm font-medium text-gray-700">신랑 신부에게 남기는 메시지</label>
+                     <textarea id="upload-message" rows="3" placeholder="두 분의 결혼을 축하합니다!" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
                 </div>
-                <p class="text-xs text-gray-500 text-center mb-4">
-                    혹시 사진 용량이 초과되어 업로드 되지 않는다면,<br>신랑 신부에게 직접 보내주시면 정말 감사드리겠습니다!
-                </p>
-                <input type="text" id="uploader-name" placeholder="이름을 입력해주세요 (예: 김창회)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-primary focus:border-primary">
+                <p class="text-xs text-gray-500 text-center mb-4">혹시 사진 용량이 초과되어 업로드 되지 않는다면,<br>신랑 신부에게 직접 보내주시면 정말 감사드리겠습니다!</p>
                 <div class="flex gap-2">
                     <button id="cancel-upload-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
                     <button id="submit-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">사진 올리기</button>
@@ -147,13 +117,11 @@
             </div>
         </div>
     </div>
-    
-    <!-- Admin Features -->
     <button id="admin-fab" class="admin-fab bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg hidden">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9z"></path><line x1="12" y1="2" x2="12" y2="22"></line></svg>
     </button>
     <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-lg w-full max-w-md p-6 fade-in max-h-[90vh] overflow-y-auto">
+        <div id="admin-modal-content" class="bg-white rounded-lg w-full max-w-md p-6 fade-in max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-bold mb-4 text-purple-600">관리자 설정</h2>
             
             <h3 class="text-lg font-bold mb-3">콘텐츠 설정</h3>
@@ -174,7 +142,6 @@
             <h3 class="text-lg font-bold mb-3">대표 이미지 설정</h3>
             <div class="flex items-center gap-4 mb-4">
                 <div id="admin-image-preview" class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border">
-                    <!-- Preview will be shown here -->
                 </div>
                 <div class="flex-grow">
                     <label for="admin-welcome-image" class="block text-sm font-medium text-gray-700">이미지 업로드 (2MB 이하)</label>
@@ -214,41 +181,33 @@
             <button id="admin-reset-btn" class="mt-4 w-full text-sm text-red-500 hover:underline">모든 설정 및 사진 초기화</button>
         </div>
     </div>
-    
-    <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white rounded-lg w-full max-w-sm p-6 fade-in">
-            <h2 id="confirm-title" class="text-xl font-bold mb-2">정말 진행하시겠습니까?</h2>
-            <p id="confirm-message" class="text-gray-600 mb-6">이 작업은 되돌릴 수 없습니다.</p>
-            <div class="flex gap-2">
-                <button id="confirm-cancel-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
-                <button id="confirm-ok-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">확인</button>
-            </div>
+            <h2 id="confirm-title" class="text-xl font-bold mb-2"></h2><p id="confirm-message" class="text-gray-600 mb-6"></p>
+            <div class="flex gap-2"><button id="confirm-cancel-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button><button id="confirm-ok-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">확인</button></div>
         </div>
     </div>
+    <input type="file" id="photo-upload-input" class="hidden" accept="image/*" multiple><div id="toast-notification" class="toast"></div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, collection, onSnapshot, query, where, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    <input type="file" id="photo-upload-input" class="hidden" accept="image/*" multiple>
-    <div id="toast-notification" class="toast"></div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIG & STATE ---
         const ADMIN_PASSWORD = '1234';
+        let db, auth, userId, userName = '', isAdmin = false;
         let currentUploadContext = { type: null, id: null };
         let selectedFiles = [];
         let confirmCallback = null;
         let tempWelcomeImage = null;
+        let unsubscribePhotos = null;
+        let configRef, photosRef;
 
         let siteContent = {
-            coupleNames: "김창회 & 김한별",
-            welcomeMessage: "두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!",
-            rewardMessage: "미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!",
-            welcomeImage: null,
-            theme: {
-                primaryColor: '#BEB2A7',
-                fontFamily: "'Gowun Dodum', sans-serif"
-            },
+            coupleNames: "김창회 & 김한별", welcomeMessage: "두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!",
+            rewardMessage: "미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!", welcomeImage: null,
+            theme: { primaryColor: '#BEB2A7', fontFamily: "'Gowun Dodum', sans-serif" },
             missions: [
                 { id: 1, title: "신랑 입장", description: "늠름하게 입장하는 신랑의 모습을 담아주세요!" },
                 { id: 2, title: "신부 입장", description: "세상에서 가장 아름다운 신부의 입장 순간을 포착해주세요." },
@@ -264,137 +223,55 @@
         };
         let uploadedPhotos = [];
 
-        // --- DOM Elements ---
-        const dom = {
-            appContainer: document.getElementById('app-container'),
-            welcomeScreen: document.getElementById('welcome-screen'),
-            mainScreen: document.getElementById('main-screen'),
-            startBtn: document.getElementById('start-btn'),
-            coupleNames: document.getElementById('couple-names'),
-            welcomeMessage: document.getElementById('welcome-message'),
-            welcomeIconContainer: document.getElementById('welcome-icon-container'),
-            missionRewardMessage: document.getElementById('mission-reward-message'),
-            missionList: document.getElementById('mission-list'),
-            galleryGrid: document.getElementById('gallery-grid'),
-            galleryPlaceholder: document.getElementById('gallery-placeholder'),
-            missionsTab: document.getElementById('missions-tab'),
-            galleryTab: document.getElementById('gallery-tab'),
-            giftTab: document.getElementById('gift-tab'),
-            missionsView: document.getElementById('missions-view'),
-            galleryView: document.getElementById('gallery-view'),
-            giftView: document.getElementById('gift-view'),
-            uploadModal: document.getElementById('upload-modal'),
-            modalTitle: document.getElementById('modal-title'),
-            uploaderName: document.getElementById('uploader-name'),
-            cancelUploadBtn: document.getElementById('cancel-upload-btn'),
-            submitUploadBtn: document.getElementById('submit-upload-btn'),
-            photoUploadInput: document.getElementById('photo-upload-input'),
-            giftUploadBtn: document.getElementById('gift-upload-btn'),
-            imagePreviewContainer: document.getElementById('image-preview-container'),
-            imagePreviewText: document.getElementById('image-preview-text'),
-            toast: document.getElementById('toast-notification'),
-            // Admin elements
-            adminFab: document.getElementById('admin-fab'),
-            adminModal: document.getElementById('admin-modal'),
-            adminCoupleNames: document.getElementById('admin-couple-names'),
-            adminWelcomeMessage: document.getElementById('admin-welcome-message'),
-            adminRewardMessage: document.getElementById('admin-reward-message'),
-            adminWelcomeImage: document.getElementById('admin-welcome-image'),
-            adminImagePreview: document.getElementById('admin-image-preview'),
-            adminRemoveImageBtn: document.getElementById('admin-remove-image-btn'),
-            adminMissionList: document.getElementById('admin-mission-list'),
-            addMissionBtn: document.getElementById('add-mission-btn'),
-            adminCancelBtn: document.getElementById('admin-cancel-btn'),
-            adminSaveBtn: document.getElementById('admin-save-btn'),
-            adminResetBtn: document.getElementById('admin-reset-btn'),
-            adminPrimaryColor: document.getElementById('admin-primary-color'),
-            adminFontFamily: document.getElementById('admin-font-family'),
-            // Confirm Modal elements
-            confirmModal: document.getElementById('confirm-modal'),
-            confirmTitle: document.getElementById('confirm-title'),
-            confirmMessage: document.getElementById('confirm-message'),
-            confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
-            confirmOkBtn: document.getElementById('confirm-ok-btn'),
-        };
+        const dom = Object.fromEntries(Array.from(document.querySelectorAll('[id]')).map(el => [el.id.replace(/-(\w)/g, (m, p1) => p1.toUpperCase()), el]));
 
         // --- Functions ---
-        const showToast = (message) => {
-            dom.toast.textContent = message;
-            dom.toast.classList.add('show');
-            setTimeout(() => { dom.toast.classList.remove('show'); }, 3000);
+        const showToast = (message) => { dom.toastNotification.textContent = message; dom.toastNotification.classList.add('show'); setTimeout(() => dom.toastNotification.classList.remove('show'), 3000); };
+        const darkenColor = (hex,p) => {let [r,g,b]=hex.match(/\w\w/g).map(x=>parseInt(x,16)),f=1-p/100;r=Math.max(0,Math.floor(r*f));g=Math.max(0,Math.floor(g*f));b=Math.max(0,Math.floor(b*f));return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`};
+        const lightenColor = (hex,p) => {let [r,g,b]=hex.match(/\w\w/g).map(x=>parseInt(x,16)),f=p/100;r=Math.min(255,Math.floor(r+(255-r)*f));g=Math.min(255,Math.floor(g+(255-g)*f));b=Math.min(255,Math.floor(b+(255-b)*f));return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`};
+        const applyTheme = (theme) => { const r=document.documentElement.style;r.setProperty('--primary-color',theme.primaryColor);r.setProperty('--primary-color-dark',darkenColor(theme.primaryColor,10));r.setProperty('--primary-color-accent',lightenColor(theme.primaryColor,15));r.setProperty('--primary-color-light-bg',lightenColor(theme.primaryColor,95));r.setProperty('--font-family',theme.fontFamily);};
+        
+        const loadData = async () => {
+            try {
+                const docSnap = await getDoc(configRef);
+                if (docSnap.exists()) { 
+                    siteContent = { ...siteContent, ...docSnap.data() }; 
+                } else {
+                    await setDoc(configRef, siteContent); // Create initial config if it doesn't exist
+                }
+            } catch (error) { console.error("Error loading config:", error); }
+            userName = localStorage.getItem('weddingMissionUserName') || '';
+            updateUI();
+            listenForPhotos();
+            dom.loadingOverlay.classList.add('hidden');
+            dom.welcomeScreen.classList.remove('hidden');
+        };
+
+        const listenForPhotos = () => {
+            if (unsubscribePhotos) unsubscribePhotos();
+            
+            const q = isAdmin ? query(photosRef) : query(photosRef, where("uploaderId", "==", userId || ''));
+            
+            unsubscribePhotos = onSnapshot(q, (snapshot) => {
+                uploadedPhotos = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
+                uploadedPhotos.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderGallery();
+                renderMissions();
+            }, (error) => console.error("Error listening for photos:", error));
         };
         
-        const darkenColor = (hex, percent) => {
-            let [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
-            const factor = 1 - percent / 100;
-            r = Math.max(0, Math.floor(r * factor));
-            g = Math.max(0, Math.floor(g * factor));
-            b = Math.max(0, Math.floor(b * factor));
-            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        };
-
-        const lightenColor = (hex, percent) => {
-             let [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
-             const factor = percent / 100;
-             r = Math.min(255, Math.floor(r + (255 - r) * factor));
-             g = Math.min(255, Math.floor(g + (255 - g) * factor));
-             b = Math.min(255, Math.floor(b + (255 - b) * factor));
-             return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        }
-
-        const applyTheme = (theme) => {
-            const root = document.documentElement;
-            root.style.setProperty('--primary-color', theme.primaryColor);
-            root.style.setProperty('--primary-color-dark', darkenColor(theme.primaryColor, 10));
-            root.style.setProperty('--primary-color-accent', lightenColor(theme.primaryColor, 15));
-            root.style.setProperty('--primary-color-light-bg', lightenColor(theme.primaryColor, 95));
-            root.style.setProperty('--font-family', theme.fontFamily);
-        };
-
-        const saveData = () => {
-            localStorage.setItem('weddingMissionContent', JSON.stringify(siteContent));
-            localStorage.setItem('weddingMissionPhotos', JSON.stringify(uploadedPhotos));
-        };
-
-        const loadData = () => {
-            const savedContent = localStorage.getItem('weddingMissionContent');
-            const savedPhotos = localStorage.getItem('weddingMissionPhotos');
-            if (savedContent) {
-                const parsedContent = JSON.parse(savedContent);
-                siteContent = {...siteContent, ...parsedContent};
-            }
-            if (savedPhotos) {
-                uploadedPhotos = JSON.parse(savedPhotos);
-            }
-        };
-        
-        const renderMissions = () => {
-            dom.missionList.innerHTML = '';
-            siteContent.missions.forEach(mission => {
-                const photosForMission = uploadedPhotos.filter(p => p.type === 'mission' && p.missionId === mission.id);
-                const missionCard = document.createElement('div');
-                missionCard.className = 'bg-white p-4 rounded-lg shadow-md border border-gray-200';
-                missionCard.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold text-lg text-gray-800">${mission.title}</h3>
-                            <p class="text-gray-600 text-sm">${mission.description}</p>
-                        </div>
-                        <div class="text-right">
-                             <div class="text-xs text-primary font-semibold mb-1">
-                                ${photosForMission.length} 장
-                            </div>
-                            <button data-mission-id="${mission.id}" class="upload-btn bg-primary-light-bg text-primary hover\:bg-primary-dark hover:text-white font-bold py-2 px-3 rounded-md text-sm transition-colors">
-                                올리기
-                            </button>
-                        </div>
-                    </div>
-                `;
-                dom.missionList.appendChild(missionCard);
+        const updateUI = () => { applyTheme(siteContent.theme); renderWelcomeIcon(); dom.coupleNames.innerHTML = siteContent.coupleNames; dom.welcomeMessage.innerHTML = siteContent.welcomeMessage; dom.missionRewardMessage.innerHTML = siteContent.rewardMessage; renderMissions(); renderGallery(); };
+        const renderMissions = () => { 
+            dom.missionList.innerHTML = ''; 
+            siteContent.missions.forEach(m => {
+                const photoCount = uploadedPhotos.filter(p => p.type === 'mission' && p.missionId === m.id).length;
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-lg shadow-md border border-gray-200';
+                card.innerHTML = `<div class="flex justify-between items-center"><div><h3 class="font-bold text-lg">${m.title}</h3><p class="text-gray-600 text-sm">${m.description}</p></div><div class="text-right"><div class="text-xs text-primary font-semibold mb-1">${photoCount} 장</div><button data-mission-id="${m.id}" class="upload-btn bg-primary-light-bg text-primary hover:bg-primary-dark hover:text-white font-bold py-2 px-3 text-sm transition-colors">올리기</button></div></div>`;
+                dom.missionList.appendChild(card);
             });
         };
-
-        const renderGallery = () => {
+        const renderGallery = () => { 
             if (uploadedPhotos.length === 0) {
                 dom.galleryPlaceholder.classList.remove('hidden');
                 dom.galleryGrid.classList.add('hidden');
@@ -402,27 +279,25 @@
                 dom.galleryPlaceholder.classList.add('hidden');
                 dom.galleryGrid.classList.remove('hidden');
                 dom.galleryGrid.innerHTML = '';
-                [...uploadedPhotos].reverse().forEach(photo => {
-                    const imgContainer = document.createElement('div');
-                    imgContainer.className = 'aspect-square bg-gray-200';
+                uploadedPhotos.forEach(p => {
+                    const container = document.createElement('div');
+                    container.className = 'aspect-square bg-gray-200';
                     const img = document.createElement('img');
-                    img.src = photo.data;
+                    img.src = p.data;
                     img.className = 'w-full h-full object-cover';
-                    imgContainer.appendChild(img);
-                    dom.galleryGrid.appendChild(imgContainer);
+                    container.appendChild(img);
+                    dom.galleryGrid.appendChild(container);
                 });
             }
         };
-
         const renderWelcomeIcon = () => {
-            dom.welcomeIconContainer.innerHTML = ''; // Clear previous content
+            dom.welcomeIconContainer.innerHTML = '';
             if (siteContent.welcomeImage) {
                 const img = document.createElement('img');
                 img.src = siteContent.welcomeImage;
                 img.className = 'w-full h-full object-cover rounded-full shadow-md';
                 dom.welcomeIconContainer.appendChild(img);
             } else {
-                // Re-create the default SVG if no image
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 svg.setAttribute('width', '64');
                 svg.setAttribute('height', '64');
@@ -432,100 +307,68 @@
                 svg.setAttribute('stroke-width', '2');
                 svg.setAttribute('stroke-linecap', 'round');
                 svg.setAttribute('stroke-linejoin', 'round');
-                svg.className = 'text-primary-accent';
-                svg.innerHTML = `<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>`;
+                svg.setAttribute('class', 'text-primary-accent');
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+                svg.appendChild(path);
+                
                 dom.welcomeIconContainer.appendChild(svg);
             }
         };
-
-        const updateUI = () => {
-            applyTheme(siteContent.theme);
-            renderWelcomeIcon();
-            dom.coupleNames.innerHTML = siteContent.coupleNames;
-            dom.welcomeMessage.innerHTML = siteContent.welcomeMessage;
-            dom.missionRewardMessage.innerHTML = siteContent.rewardMessage;
-            renderMissions();
-            renderGallery();
+        const switchTab = (tab) => {
+            [{btn:dom.missionsTab,view:dom.missionsView},{btn:dom.giftTab,view:dom.giftView},{btn:dom.galleryTab,view:dom.galleryView}].forEach(p=>{p.btn.classList.replace('tab-active','tab-inactive');p.view.classList.add('hidden')});
+            dom[tab+'Tab'].classList.replace('tab-inactive','tab-active');
+            dom[tab+'View'].classList.remove('hidden');
         };
-
-        const switchTab = (activeTab) => {
-            const tabs = {
-                missions: { btn: dom.missionsTab, view: dom.missionsView },
-                gift: { btn: dom.giftTab, view: dom.giftView },
-                gallery: { btn: dom.galleryTab, view: dom.galleryView }
-            };
-
-            Object.values(tabs).forEach(tab => {
-                tab.btn.classList.replace('tab-active', 'tab-inactive');
-                tab.view.classList.add('hidden');
-            });
-            
-            tabs[activeTab].btn.classList.replace('tab-inactive', 'tab-active');
-            tabs[activeTab].view.classList.remove('hidden');
-        };
-
-        const openUploadModal = (type, id = null) => {
-            currentUploadContext = { type, id };
+        const openUploadModal = (type, id=null) => {
+            currentUploadContext = {type, id};
             selectedFiles = [];
-            dom.uploaderName.value = '';
+            dom.uploadMessage.value = '';
             dom.imagePreviewText.textContent = '사진을 선택해주세요';
-             const previewImage = dom.imagePreviewContainer.querySelector('img');
-            if (previewImage) {
-                previewImage.remove();
-            }
-
+            const previewImg = dom.imagePreviewContainer.querySelector('img');
+            if (previewImg) previewImg.remove();
+            
             if (type === 'mission') {
                 const mission = siteContent.missions.find(m => m.id === id);
                 dom.modalTitle.textContent = `"${mission.title}" 미션`;
+                dom.messageInputContainer.classList.add('hidden');
             } else {
                 dom.modalTitle.textContent = '포토 기프트 올리기';
+                dom.messageInputContainer.classList.remove('hidden');
             }
             dom.uploadModal.classList.remove('hidden');
         };
-        
-        const closeUploadModal = () => {
-            dom.uploadModal.classList.add('hidden');
-        };
-
         const handleFileUpload = async (files) => {
             if (files.length === 0) return;
             selectedFiles = Array.from(files);
             dom.imagePreviewText.textContent = `${selectedFiles.length}개의 사진 선택됨`;
-            const previewImage = dom.imagePreviewContainer.querySelector('img');
-            if (previewImage) previewImage.remove();
+            const previewImg = dom.imagePreviewContainer.querySelector('img');
+            if (previewImg) previewImg.remove();
             
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'w-full h-full object-contain';
                 dom.imagePreviewContainer.appendChild(img);
                 dom.imagePreviewText.textContent = '';
-            }
+            };
             reader.readAsDataURL(selectedFiles[0]);
         };
-        
-        const readFileAsDataURL = (file) => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        };
-        
+        const readFileAsDataURL = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
         const showConfirm = (title, message, callback) => {
             dom.confirmTitle.textContent = title;
             dom.confirmMessage.innerHTML = message;
             confirmCallback = callback;
             dom.confirmModal.classList.remove('hidden');
         };
-        
-        const closeConfirm = () => {
-            dom.confirmModal.classList.add('hidden');
-            confirmCallback = null;
-        };
-        
+
         const renderAdminImagePreview = () => {
             dom.adminImagePreview.innerHTML = '';
             if (tempWelcomeImage) {
@@ -538,23 +381,9 @@
             }
         };
 
-        const openAdminModal = () => {
-            dom.adminCoupleNames.value = siteContent.coupleNames.replace(/<br>/g, '');
-            dom.adminWelcomeMessage.value = siteContent.welcomeMessage.replace(/<br>/g, '\n');
-            dom.adminRewardMessage.value = siteContent.rewardMessage.replace(/<br>/g, '\n');
-            tempWelcomeImage = siteContent.welcomeImage;
-            renderAdminImagePreview();
-            dom.adminPrimaryColor.value = siteContent.theme.primaryColor;
-            dom.adminFontFamily.value = siteContent.theme.fontFamily;
-            renderAdminMissions();
-            dom.adminModal.classList.remove('hidden');
-        };
-        
-        const closeAdminModal = () => dom.adminModal.classList.add('hidden');
-
-        const renderAdminMissions = () => {
+        const renderAdminMissions = (missions) => {
             dom.adminMissionList.innerHTML = '';
-            siteContent.missions.forEach(mission => {
+            missions.forEach(mission => {
                 const missionItem = document.createElement('div');
                 missionItem.className = 'flex items-center gap-2 p-2 border rounded-md';
                 missionItem.innerHTML = `
@@ -570,162 +399,117 @@
             });
         };
 
+        const openAdminModal = () => {
+            dom.adminCoupleNames.value = siteContent.coupleNames;
+            dom.adminWelcomeMessage.value = siteContent.welcomeMessage.replace(/<br>/g, '\n');
+            dom.adminRewardMessage.value = siteContent.rewardMessage.replace(/<br>/g, '\n');
+            tempWelcomeImage = siteContent.welcomeImage;
+            renderAdminImagePreview();
+            dom.adminPrimaryColor.value = siteContent.theme.primaryColor;
+            dom.adminFontFamily.value = siteContent.theme.fontFamily;
+            renderAdminMissions(siteContent.missions);
+            dom.adminModal.classList.remove('hidden');
+        };
+        
         // --- Event Listeners ---
-        dom.startBtn.addEventListener('click', () => {
-            dom.welcomeScreen.classList.add('hidden');
-            dom.mainScreen.classList.remove('hidden');
-            dom.mainScreen.classList.add('fade-in');
-        });
+        dom.startBtn.addEventListener('click',()=>{if(userName){dom.welcomeScreen.classList.add('hidden');dom.mainScreen.classList.remove('hidden');dom.mainScreen.classList.add('fade-in')}else{dom.nameEntryModal.classList.remove('hidden')}});
+        dom.nameEntrySubmitBtn.addEventListener('click',()=>{const n=dom.nameEntryInput.value.trim();if(!n)return showToast('이름을 입력해주세요.');userName=n;localStorage.setItem('weddingMissionUserName',userName);dom.nameEntryModal.classList.add('hidden');dom.welcomeScreen.classList.add('hidden');dom.mainScreen.classList.remove('hidden');dom.mainScreen.classList.add('fade-in')});
+        dom.missionsTab.addEventListener('click',()=>switchTab('missions'));dom.giftTab.addEventListener('click',()=>switchTab('gift'));dom.galleryTab.addEventListener('click',()=>switchTab('gallery'));
+        dom.missionList.addEventListener('click',e=>{const b=e.target.closest('.upload-btn');if(b){const i=parseInt(b.dataset.missionId);openUploadModal('mission',i);dom.photoUploadInput.click()}});
+        dom.giftUploadBtn.addEventListener('click',()=>{openUploadModal('gift');dom.photoUploadInput.click()});
+        dom.photoUploadInput.addEventListener('change',e=>handleFileUpload(e.target.files));
+        dom.cancelUploadBtn.addEventListener('click',()=>dom.uploadModal.classList.add('hidden'));
+        dom.submitUploadBtn.addEventListener('click',async()=>{if(!userName)return showToast('오류 발생. 새로고침 해주세요.');if(selectedFiles.length===0)return showToast('사진을 선택해주세요.');dom.submitUploadBtn.disabled=true;dom.submitUploadBtn.textContent='업로드 중...';for(const f of selectedFiles){try{const d=await readFileAsDataURL(f),p={uploader:userName,uploaderId:userId,data:d,type:currentUploadContext.type,missionId:currentUploadContext.id,timestamp:new Date().toISOString()};if(p.type==='gift')p.message=dom.uploadMessage.value.trim();await addDoc(photosRef,p)}catch(e){showToast("사진 업로드 중 오류 발생")}};dom.uploadModal.classList.add('hidden');showToast(`${selectedFiles.length}장의 사진이 업로드되었습니다!`);switchTab('gallery');dom.submitUploadBtn.disabled=false;dom.submitUploadBtn.textContent='사진 올리기'});
         
-        dom.missionsTab.addEventListener('click', () => switchTab('missions'));
-        dom.galleryTab.addEventListener('click', () => switchTab('gallery'));
-        dom.giftTab.addEventListener('click', () => switchTab('gift'));
-
-        dom.missionList.addEventListener('click', (e) => {
-            const button = e.target.closest('.upload-btn');
-            if (button) {
-                const missionId = parseInt(button.dataset.missionId);
-                openUploadModal('mission', missionId);
-                dom.photoUploadInput.click();
-            }
-        });
-
-        dom.giftUploadBtn.addEventListener('click', () => {
-            openUploadModal('gift');
-            dom.photoUploadInput.click();
-        });
-
-        dom.photoUploadInput.addEventListener('change', (e) => handleFileUpload(e.target.files));
-        dom.cancelUploadBtn.addEventListener('click', closeUploadModal);
-
-        dom.submitUploadBtn.addEventListener('click', async () => {
-            if (!dom.uploaderName.value.trim()) return showToast('이름을 입력해주세요.');
-            if (selectedFiles.length === 0) return showToast('사진을 선택해주세요.');
-
-            dom.submitUploadBtn.disabled = true;
-            dom.submitUploadBtn.textContent = '업로드 중...';
-
-            for (const file of selectedFiles) {
-                try {
-                    const photoData = await readFileAsDataURL(file);
-                    uploadedPhotos.push({
-                        id: Date.now() + Math.random(), uploader: dom.uploaderName.value.trim(), data: photoData,
-                        type: currentUploadContext.type, missionId: currentUploadContext.id, timestamp: new Date().toISOString()
-                    });
-                } catch (error) { showToast("사진을 읽는 중 오류가 발생했습니다."); }
-            }
-
-            saveData();
-            updateUI();
-            closeUploadModal();
-            showToast(`${selectedFiles.length}장의 사진이 업로드되었습니다!`);
-            switchTab('gallery');
-            
-            dom.submitUploadBtn.disabled = false;
-            dom.submitUploadBtn.textContent = '사진 올리기';
-        });
-
-        // Admin Event Listeners
+        // Admin Listeners
         dom.adminFab.addEventListener('click', openAdminModal);
-        dom.adminCancelBtn.addEventListener('click', closeAdminModal);
-        
+        dom.adminCancelBtn.addEventListener('click', () => dom.adminModal.classList.add('hidden'));
         dom.adminWelcomeImage.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                try {
-                    if (file.size > 2 * 1024 * 1024) {
-                        showToast('이미지 크기는 2MB를 초과할 수 없습니다.');
-                        e.target.value = '';
-                        return;
-                    }
-                    tempWelcomeImage = await readFileAsDataURL(file);
-                    renderAdminImagePreview();
-                } catch (error) {
-                    showToast('이미지를 읽는 데 실패했습니다.');
-                    tempWelcomeImage = siteContent.welcomeImage;
-                    renderAdminImagePreview();
-                }
+                if (file.size > 2 * 1024 * 1024) return showToast('이미지 크기는 2MB를 초과할 수 없습니다.');
+                tempWelcomeImage = await readFileAsDataURL(file);
+                renderAdminImagePreview();
             }
         });
-
-        dom.adminRemoveImageBtn.addEventListener('click', () => {
-            tempWelcomeImage = null;
-            dom.adminWelcomeImage.value = '';
-            renderAdminImagePreview();
-        });
-        
+        dom.adminRemoveImageBtn.addEventListener('click', () => { tempWelcomeImage = null; renderAdminImagePreview(); });
         dom.addMissionBtn.addEventListener('click', () => {
             const newId = siteContent.missions.length > 0 ? Math.max(...siteContent.missions.map(m => m.id)) + 1 : 1;
             siteContent.missions.push({ id: newId, title: "", description: "" });
-            renderAdminMissions();
+            renderAdminMissions(siteContent.missions);
         });
-
-        dom.adminMissionList.addEventListener('click', (e) => {
-            const button = e.target.closest('.remove-mission-btn');
-            if (button) {
-                const idToRemove = parseInt(button.dataset.id);
+        dom.adminModalContent.addEventListener('click', (e) => {
+            const btn = e.target.closest('.remove-mission-btn');
+            if (btn) {
+                const idToRemove = parseInt(btn.dataset.id);
                 siteContent.missions = siteContent.missions.filter(m => m.id !== idToRemove);
-                renderAdminMissions();
+                renderAdminMissions(siteContent.missions);
             }
         });
-
-        dom.adminSaveBtn.addEventListener('click', () => {
-            siteContent.coupleNames = dom.adminCoupleNames.value;
-            siteContent.welcomeMessage = dom.adminWelcomeMessage.value.replace(/\n/g, '<br>');
-            siteContent.rewardMessage = dom.adminRewardMessage.value.replace(/\n/g, '<br>');
-            siteContent.welcomeImage = tempWelcomeImage;
-            siteContent.theme.primaryColor = dom.adminPrimaryColor.value;
-            siteContent.theme.fontFamily = dom.adminFontFamily.value;
-
-            document.querySelectorAll('.admin-mission-input').forEach(input => {
-                const id = parseInt(input.dataset.id), field = input.dataset.field;
-                const mission = siteContent.missions.find(m => m.id === id);
-                if (mission) mission[field] = input.value;
-            });
-            
-            saveData();
-            updateUI();
-            closeAdminModal();
-            showToast('설정이 저장되었습니다.');
+        dom.adminSaveBtn.addEventListener('click', async () => {
+            const newConfig = {
+                ...siteContent,
+                coupleNames: dom.adminCoupleNames.value,
+                welcomeMessage: dom.adminWelcomeMessage.value.replace(/\n/g, '<br>'),
+                rewardMessage: dom.adminRewardMessage.value.replace(/\n/g, '<br>'),
+                welcomeImage: tempWelcomeImage,
+                theme: {
+                    primaryColor: dom.adminPrimaryColor.value,
+                    fontFamily: dom.adminFontFamily.value,
+                },
+                missions: Array.from(dom.adminMissionList.children).map(item => {
+                    const titleInput = item.querySelector('[data-field="title"]');
+                    const descInput = item.querySelector('[data-field="description"]');
+                    return {
+                        id: parseInt(titleInput.dataset.id),
+                        title: titleInput.value,
+                        description: descInput.value
+                    };
+                })
+            };
+            try {
+                await setDoc(configRef, newConfig);
+                siteContent = newConfig;
+                updateUI();
+                dom.adminModal.classList.add('hidden');
+                showToast('설정이 저장되었습니다.');
+            } catch (error) {
+                showToast('저장 중 오류가 발생했습니다.');
+                console.error("Error saving config:", error);
+            }
         });
+        dom.adminResetBtn.addEventListener('click', () => showConfirm('모든 데이터 초기화','정말로 모든 설정과 업로드된 사진을 초기화하시겠습니까?<br><strong>이 작업은 되돌릴 수 없습니다.</strong>',async()=>{try{const photoSnapshot=await getDocs(photosRef);const deletePromises=photoSnapshot.docs.map(d=>deleteDoc(d.ref));deletePromises.push(deleteDoc(configRef));await Promise.all(deletePromises);showToast('모든 데이터가 초기화되었습니다.');setTimeout(()=>window.location.reload(),1000)}catch(e){showToast('초기화 중 오류 발생')}}));
+        dom.confirmCancelBtn.addEventListener('click',()=>dom.confirmModal.classList.add('hidden'));
+        dom.confirmOkBtn.addEventListener('click',()=>{if(confirmCallback)confirmCallback();dom.confirmModal.classList.add('hidden')});
         
-        dom.adminResetBtn.addEventListener('click', () => {
-             showConfirm(
-                '설정 및 사진 초기화',
-                '정말로 모든 설정과 업로드된 사진을 초기화하시겠습니까?<br><strong>이 작업은 되돌릴 수 없습니다.</strong>',
-                () => {
-                    localStorage.clear();
-                    window.location.reload();
-                }
-            );
-        });
+        const checkAdminMode=()=>{if(window.location.hash==='#admin'){const p=prompt('관리자 비밀번호:','');if(p===ADMIN_PASSWORD){isAdmin=true;dom.adminFab.classList.remove('hidden');showToast('관리자 모드 활성화');listenForPhotos()}else if(p)alert('비밀번호 오류');history.pushState("",document.title,window.location.pathname+window.location.search)}};
         
-        dom.confirmCancelBtn.addEventListener('click', closeConfirm);
-        dom.confirmOkBtn.addEventListener('click', () => {
-            if (confirmCallback) {
-                confirmCallback();
-            }
-            closeConfirm();
-        });
-
-        const checkAdminMode = () => {
-            if (window.location.hash === '#admin') {
-                const password = prompt('관리자 비밀번호를 입력하세요:', '');
-                if (password === ADMIN_PASSWORD) {
-                    dom.adminFab.classList.remove('hidden');
-                    showToast('관리자 모드가 활성화되었습니다.');
-                } else if(password) {
-                    alert('비밀번호가 틀렸습니다.');
-                }
-                history.pushState("", document.title, window.location.pathname + window.location.search);
-            }
-        };
-
         // --- Initial Load ---
-        loadData();
-        updateUI();
-        checkAdminMode();
-    });
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wedding-app';
+            configRef = doc(db, `/artifacts/${appId}/public/data/config`, "main");
+            photosRef = collection(db, `/artifacts/${appId}/public/data/photos`);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    await loadData();
+                    checkAdminMode();
+                } else {
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) { await signInWithCustomToken(auth, token); }
+                    else { await signInAnonymously(auth); }
+                }
+            });
+        } catch(e) {
+            console.error("Firebase initialization failed:", e);
+            dom.loadingOverlay.innerHTML = "<p>연결에 실패했습니다. 다시 시도해주세요.</p>";
+        }
     </script>
 </body>
 </html>
