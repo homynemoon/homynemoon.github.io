@@ -53,13 +53,13 @@
     <div id="app-container" class="max-w-lg mx-auto min-h-screen bg-white shadow-lg relative">
         
         <!-- Loading Spinner -->
-        <div id="loading-overlay" class="absolute inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
+        <div id="loading-overlay" class="absolute inset-0 bg-white/80 z-50 flex flex-col items-center justify-center hidden">
             <div class="loader"></div>
-            <p class="mt-4 text-gray-600">연결 중입니다...</p>
+            <p class="mt-4 text-gray-600">처리 중...</p>
         </div>
 
         <!-- Welcome Screen -->
-        <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center hidden">
+        <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center">
             <div id="welcome-icon-container" class="mb-8 w-24 h-24 flex items-center justify-center"></div>
             <h1 id="couple-names" class="text-3xl font-bold text-gray-800 mb-2"></h1>
             <p class="text-lg text-gray-600 mb-8">Wedding Photo Mission</p>
@@ -256,7 +256,7 @@
                 }
             } catch (error) { 
                 console.error("Error during initial data load:", error);
-                showToast("데이터 로딩 중 오류가 발생했습니다. 기본 설정으로 시작합니다.");
+                showToast("데이터 로딩 중 오류 발생. 기본 설정으로 시작합니다.");
             }
             
             userName = localStorage.getItem('weddingMissionUserName') || '';
@@ -267,6 +267,7 @@
         };
 
         const listenForPhotos = () => {
+            if (!db) return;
             if (unsubscribePhotos) unsubscribePhotos();
             const q = isAdmin ? query(photosRef) : query(photosRef, where("uploaderId", "==", userId || ''));
             unsubscribePhotos = onSnapshot(q, (snapshot) => {
@@ -554,32 +555,45 @@
         
         const checkAdminMode=()=>{if(window.location.hash==='#admin'){const p=prompt('관리자 비밀번호:','');if(p===ADMIN_PASSWORD){isAdmin=true;dom.adminFab.classList.remove('hidden');showToast('관리자 모드 활성화');listenForPhotos()}else if(p)alert('비밀번호 오류');history.pushState("",document.title,window.location.pathname+window.location.search)}};
         
-        // --- Initial Load ---
-        try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
+        // --- App Initialization ---
+        const startApp = async () => {
+            // Immediately show the UI with default content, don't wait for Firebase
+            updateUI(); 
+            dom.loadingOverlay.classList.remove('hidden');
 
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wedding-app';
-            configRef = doc(db, `/artifacts/${appId}/public/data/config`, "main");
-            photosRef = collection(db, `/artifacts/${appId}/public/data/photos`);
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
 
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    await initializeAppContent();
-                    checkAdminMode();
-                } else {
-                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) { await signInWithCustomToken(auth, token); }
-                    else { await signInAnonymously(auth); }
-                }
-            });
-        } catch(e) {
-            console.error("Firebase initialization failed:", e);
-            dom.loadingOverlay.innerHTML = "<p>연결에 실패했습니다. 다시 시도해주세요.</p>";
-        }
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wedding-app';
+                configRef = doc(db, `/artifacts/${appId}/public/data/config`, "main");
+                photosRef = collection(db, `/artifacts/${appId}/public/data/photos`);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        await initializeAppContent();
+                        checkAdminMode();
+                    } else {
+                        const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        if (token) { await signInWithCustomToken(auth, token); }
+                        else { await signInAnonymously(auth); }
+                    }
+                });
+            } catch(e) {
+                console.error("Firebase initialization failed:", e);
+                dom.loadingOverlay.innerHTML = "<p>연결에 실패했습니다. 기본 설정으로 표시됩니다.</p>";
+                setTimeout(() => {
+                    dom.loadingOverlay.classList.add('hidden');
+                    dom.welcomeScreen.classList.remove('hidden');
+                }, 2000);
+            }
+        };
+
+        startApp();
+
     </script>
 </body>
 </html>
