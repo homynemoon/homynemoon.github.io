@@ -244,12 +244,21 @@
                 if (docSnap.exists()) {
                     console.log("Config document found. Merging with defaults.");
                     const savedData = docSnap.data();
-                    const missions = (Array.isArray(savedData.missions) && savedData.missions.length > 0) ? savedData.missions : siteContent.missions;
-                    const theme = savedData.theme ? { ...siteContent.theme, ...savedData.theme } : siteContent.theme;
-                    siteContent = { ...siteContent, ...savedData, missions, theme };
+                    // Robustly merge data to prevent errors from incomplete objects
+                    siteContent = {
+                        ...siteContent,
+                        ...savedData,
+                        theme: {
+                            ...siteContent.theme,
+                            ...(savedData.theme || {}),
+                        },
+                        missions: (Array.isArray(savedData.missions) && savedData.missions.length > 0)
+                            ? savedData.missions
+                            : siteContent.missions,
+                    };
                 } else {
                     console.log("No config document found. Creating a new one with default data.");
-                    await setDoc(configRef, siteContent).catch(e => console.error("Failed to create initial config:", e));
+                    await setDoc(configRef, siteContent);
                 }
                  console.log("Data loaded successfully.");
             } catch (error) { 
@@ -276,6 +285,7 @@
         
         const updateUI = () => { applyTheme(siteContent.theme); renderWelcomeIcon(); dom.coupleNames.innerHTML = siteContent.coupleNames; dom.welcomeMessage.innerHTML = siteContent.welcomeMessage; dom.missionRewardMessage.innerHTML = siteContent.rewardMessage; renderMissions(); renderGallery(); };
         const renderMissions = () => { 
+            if (!siteContent.missions) return;
             dom.missionList.innerHTML = ''; 
             siteContent.missions.forEach(m => {
                 const photoCount = uploadedPhotos.filter(p => p.type === 'mission' && p.missionId === m.id).length;
