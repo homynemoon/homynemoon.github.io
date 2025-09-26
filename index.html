@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wedding Photo Mission</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Stylish&display=swap" rel="stylesheet">
@@ -89,6 +90,11 @@
                 <button id="gift-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">사진 올리기</button>
             </div>
             <div id="gallery-view" class="hidden">
+                <div id="gallery-controls" class="hidden p-2 text-center mb-2">
+                    <button id="download-all-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg shadow-md">
+                        모든 사진 한번에 다운로드 (ZIP)
+                    </button>
+                </div>
                 <p id="gallery-placeholder" class="text-center text-gray-500 py-16">아직 공유된 사진이 없어요.<br>첫 번째 사진을 올려주세요!</p>
                 <div id="gallery-grid" class="grid grid-cols-3 gap-1"></div>
             </div>
@@ -272,6 +278,12 @@
             });
         };
         const renderGallery = () => { 
+            if (isAdmin && uploadedPhotos.length > 0) {
+                dom.galleryControls.classList.remove('hidden');
+            } else {
+                dom.galleryControls.classList.add('hidden');
+            }
+
             if (uploadedPhotos.length === 0) {
                 dom.galleryPlaceholder.classList.remove('hidden');
                 dom.galleryGrid.classList.add('hidden');
@@ -436,6 +448,37 @@
         dom.cancelUploadBtn.addEventListener('click',()=>dom.uploadModal.classList.add('hidden'));
         dom.submitUploadBtn.addEventListener('click',async()=>{if(!userName)return showToast('오류 발생. 새로고침 해주세요.');if(selectedFiles.length===0)return showToast('사진을 선택해주세요.');dom.submitUploadBtn.disabled=true;dom.submitUploadBtn.textContent='업로드 중...';for(const f of selectedFiles){try{const d=await readFileAsDataURL(f),p={uploader:userName,uploaderId:userId,data:d,type:currentUploadContext.type,missionId:currentUploadContext.id,timestamp:new Date().toISOString()};if(p.type==='gift')p.message=dom.uploadMessage.value.trim();await addDoc(photosRef,p)}catch(e){showToast("사진 업로드 중 오류 발생")}};dom.uploadModal.classList.add('hidden');showToast(`${selectedFiles.length}장의 사진이 업로드되었습니다!`);switchTab('gallery');dom.submitUploadBtn.disabled=false;dom.submitUploadBtn.textContent='사진 올리기'});
         
+        dom.downloadAllBtn.addEventListener('click', () => {
+            if (uploadedPhotos.length === 0) {
+                showToast('다운로드할 사진이 없습니다.');
+                return;
+            }
+
+            showToast('사진 압축을 시작합니다... (잠시만 기다려주세요)');
+            dom.downloadAllBtn.disabled = true;
+            dom.downloadAllBtn.textContent = '압축 중...';
+
+            const zip = new JSZip();
+            uploadedPhotos.forEach(photo => {
+                const base64Data = photo.data.split(',')[1];
+                const fileName = `${new Date(photo.timestamp).toISOString().split('.')[0].replace(/[-:T]/g, '')}_${photo.uploader}.jpg`;
+                zip.file(fileName, base64Data, {base64: true});
+            });
+
+            zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = `wedding_photos_${new Date().toISOString().split('T')[0]}.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showToast('다운로드가 시작되었습니다.');
+                    dom.downloadAllBtn.disabled = false;
+                    dom.downloadAllBtn.textContent = '모든 사진 한번에 다운로드 (ZIP)';
+                });
+        });
+
         // Admin Listeners
         dom.adminFab.addEventListener('click', openAdminModal);
         dom.adminCancelBtn.addEventListener('click', () => dom.adminModal.classList.add('hidden'));
