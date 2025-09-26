@@ -86,8 +86,8 @@
 
         <!-- Welcome Screen -->
         <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center">
-            <div class="mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary-accent"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+            <div id="welcome-icon-container" class="mb-8 w-24 h-24 flex items-center justify-center">
+                <!-- Icon or Image will be injected here by JavaScript -->
             </div>
             <h1 id="couple-names" class="text-3xl font-bold text-gray-800 mb-2">김창회 & 김한별</h1>
             <p class="text-lg text-gray-600 mb-8">Wedding Photo Mission</p>
@@ -136,7 +136,10 @@
                 <div id="image-preview-container" class="w-full h-32 flex items-center justify-center rounded-md mb-4 border bg-gray-100 overflow-hidden">
                     <p id="image-preview-text" class="text-gray-500"></p>
                 </div>
-                <input type="text" id="uploader-name" placeholder="이름을 입력해주세요 (예: 홍길동)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-primary focus:border-primary">
+                <p class="text-xs text-gray-500 text-center mb-4">
+                    혹시 사진 용량이 초과되어 업로드 되지 않는다면,<br>신랑 신부에게 직접 보내주시면 정말 감사드리겠습니다!
+                </p>
+                <input type="text" id="uploader-name" placeholder="이름을 입력해주세요 (예: 김창회)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-primary focus:border-primary">
                 <div class="flex gap-2">
                     <button id="cancel-upload-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
                     <button id="submit-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">사진 올리기</button>
@@ -165,6 +168,19 @@
              <div class="mb-4">
                 <label for="admin-reward-message" class="block text-sm font-medium text-gray-700">보상 메시지</label>
                 <textarea id="admin-reward-message" rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
+            </div>
+            <hr class="my-6">
+
+            <h3 class="text-lg font-bold mb-3">대표 이미지 설정</h3>
+            <div class="flex items-center gap-4 mb-4">
+                <div id="admin-image-preview" class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border">
+                    <!-- Preview will be shown here -->
+                </div>
+                <div class="flex-grow">
+                    <label for="admin-welcome-image" class="block text-sm font-medium text-gray-700">이미지 업로드 (2MB 이하)</label>
+                    <input type="file" id="admin-welcome-image" accept="image/*" class="mt-1 text-sm text-gray-600 file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer">
+                    <button id="admin-remove-image-btn" class="mt-2 text-xs text-red-500 hover:underline">이미지 삭제 (기본 하트로 변경)</button>
+                </div>
             </div>
             <hr class="my-6">
 
@@ -222,11 +238,13 @@
         let currentUploadContext = { type: null, id: null };
         let selectedFiles = [];
         let confirmCallback = null;
+        let tempWelcomeImage = null;
 
         let siteContent = {
             coupleNames: "김창회 & 김한별",
             welcomeMessage: "두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!",
             rewardMessage: "미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!",
+            welcomeImage: null,
             theme: {
                 primaryColor: '#BEB2A7',
                 fontFamily: "'Gowun Dodum', sans-serif"
@@ -254,6 +272,7 @@
             startBtn: document.getElementById('start-btn'),
             coupleNames: document.getElementById('couple-names'),
             welcomeMessage: document.getElementById('welcome-message'),
+            welcomeIconContainer: document.getElementById('welcome-icon-container'),
             missionRewardMessage: document.getElementById('mission-reward-message'),
             missionList: document.getElementById('mission-list'),
             galleryGrid: document.getElementById('gallery-grid'),
@@ -280,6 +299,9 @@
             adminCoupleNames: document.getElementById('admin-couple-names'),
             adminWelcomeMessage: document.getElementById('admin-welcome-message'),
             adminRewardMessage: document.getElementById('admin-reward-message'),
+            adminWelcomeImage: document.getElementById('admin-welcome-image'),
+            adminImagePreview: document.getElementById('admin-image-preview'),
+            adminRemoveImageBtn: document.getElementById('admin-remove-image-btn'),
             adminMissionList: document.getElementById('admin-mission-list'),
             addMissionBtn: document.getElementById('add-mission-btn'),
             adminCancelBtn: document.getElementById('admin-cancel-btn'),
@@ -339,11 +361,6 @@
             const savedPhotos = localStorage.getItem('weddingMissionPhotos');
             if (savedContent) {
                 const parsedContent = JSON.parse(savedContent);
-                // Deep merge theme object to ensure all properties are present
-                const defaultTheme = siteContent.theme || {};
-                const savedTheme = parsedContent.theme || {};
-                parsedContent.theme = { ...defaultTheme, ...savedTheme };
-                // Merge the rest of the content
                 siteContent = {...siteContent, ...parsedContent};
             }
             if (savedPhotos) {
@@ -397,8 +414,33 @@
             }
         };
 
+        const renderWelcomeIcon = () => {
+            dom.welcomeIconContainer.innerHTML = ''; // Clear previous content
+            if (siteContent.welcomeImage) {
+                const img = document.createElement('img');
+                img.src = siteContent.welcomeImage;
+                img.className = 'w-full h-full object-cover rounded-full shadow-md';
+                dom.welcomeIconContainer.appendChild(img);
+            } else {
+                // Re-create the default SVG if no image
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', '64');
+                svg.setAttribute('height', '64');
+                svg.setAttribute('viewBox', '0 0 24 24');
+                svg.setAttribute('fill', 'none');
+                svg.setAttribute('stroke', 'currentColor');
+                svg.setAttribute('stroke-width', '2');
+                svg.setAttribute('stroke-linecap', 'round');
+                svg.setAttribute('stroke-linejoin', 'round');
+                svg.className = 'text-primary-accent';
+                svg.innerHTML = `<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>`;
+                dom.welcomeIconContainer.appendChild(svg);
+            }
+        };
+
         const updateUI = () => {
             applyTheme(siteContent.theme);
+            renderWelcomeIcon();
             dom.coupleNames.innerHTML = siteContent.coupleNames;
             dom.welcomeMessage.innerHTML = siteContent.welcomeMessage;
             dom.missionRewardMessage.innerHTML = siteContent.rewardMessage;
@@ -483,11 +525,25 @@
             dom.confirmModal.classList.add('hidden');
             confirmCallback = null;
         };
+        
+        const renderAdminImagePreview = () => {
+            dom.adminImagePreview.innerHTML = '';
+            if (tempWelcomeImage) {
+                const img = document.createElement('img');
+                img.src = tempWelcomeImage;
+                img.className = 'w-full h-full object-cover';
+                dom.adminImagePreview.appendChild(img);
+            } else {
+                dom.adminImagePreview.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`;
+            }
+        };
 
         const openAdminModal = () => {
             dom.adminCoupleNames.value = siteContent.coupleNames.replace(/<br>/g, '');
             dom.adminWelcomeMessage.value = siteContent.welcomeMessage.replace(/<br>/g, '\n');
             dom.adminRewardMessage.value = siteContent.rewardMessage.replace(/<br>/g, '\n');
+            tempWelcomeImage = siteContent.welcomeImage;
+            renderAdminImagePreview();
             dom.adminPrimaryColor.value = siteContent.theme.primaryColor;
             dom.adminFontFamily.value = siteContent.theme.fontFamily;
             renderAdminMissions();
@@ -573,6 +629,31 @@
         dom.adminFab.addEventListener('click', openAdminModal);
         dom.adminCancelBtn.addEventListener('click', closeAdminModal);
         
+        dom.adminWelcomeImage.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    if (file.size > 2 * 1024 * 1024) {
+                        showToast('이미지 크기는 2MB를 초과할 수 없습니다.');
+                        e.target.value = '';
+                        return;
+                    }
+                    tempWelcomeImage = await readFileAsDataURL(file);
+                    renderAdminImagePreview();
+                } catch (error) {
+                    showToast('이미지를 읽는 데 실패했습니다.');
+                    tempWelcomeImage = siteContent.welcomeImage;
+                    renderAdminImagePreview();
+                }
+            }
+        });
+
+        dom.adminRemoveImageBtn.addEventListener('click', () => {
+            tempWelcomeImage = null;
+            dom.adminWelcomeImage.value = '';
+            renderAdminImagePreview();
+        });
+        
         dom.addMissionBtn.addEventListener('click', () => {
             const newId = siteContent.missions.length > 0 ? Math.max(...siteContent.missions.map(m => m.id)) + 1 : 1;
             siteContent.missions.push({ id: newId, title: "", description: "" });
@@ -592,6 +673,7 @@
             siteContent.coupleNames = dom.adminCoupleNames.value;
             siteContent.welcomeMessage = dom.adminWelcomeMessage.value.replace(/\n/g, '<br>');
             siteContent.rewardMessage = dom.adminRewardMessage.value.replace(/\n/g, '<br>');
+            siteContent.welcomeImage = tempWelcomeImage;
             siteContent.theme.primaryColor = dom.adminPrimaryColor.value;
             siteContent.theme.fontFamily = dom.adminFontFamily.value;
 
