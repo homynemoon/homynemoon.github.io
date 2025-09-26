@@ -5,11 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wedding Photo Mission</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Stylish&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
+        /* CSS 변수를 사용하여 테마 관리 */
+        :root {
+            --primary-color: #ec4899; /* pink-500 default */
+            --primary-color-dark: #db2777; /* pink-600 default */
+            --primary-color-accent: #f472b6; /* pink-400 default */
+            --primary-color-light-bg: #fdf2f8; /* pink-50 default */
+            --font-family: 'Noto Sans KR', sans-serif;
         }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--primary-color-light-bg);
+        }
+        .bg-primary { background-color: var(--primary-color); }
+        .hover\:bg-primary-dark:hover { background-color: var(--primary-color-dark); }
+        .text-primary { color: var(--primary-color); }
+        .text-primary-accent { color: var(--primary-color-accent); }
+        .border-primary { border-color: var(--primary-color); }
+        .focus\:ring-primary:focus {
+            --tw-ring-color: var(--primary-color);
+        }
+        .focus\:border-primary:focus {
+            border-color: var(--primary-color);
+        }
+        .bg-primary-light-bg {
+            background-color: var(--primary-color-light-bg) !important;
+        }
+
         .fade-in {
             animation: fadeIn 0.5s ease-in-out;
         }
@@ -26,7 +52,7 @@
             border-radius: 8px;
             padding: 16px;
             position: fixed;
-            z-index: 100;
+            z-index: 110;
             left: 50%;
             bottom: 30px;
             transform: translateX(-50%);
@@ -38,7 +64,6 @@
             opacity: 1;
             bottom: 50px;
         }
-        /* Admin-specific styles */
         .admin-fab {
             position: fixed;
             bottom: 20px;
@@ -46,28 +71,28 @@
             z-index: 90;
         }
         .tab-active {
-            color: #ec4899; /* text-pink-500 */
+            color: var(--primary-color);
+            border-color: var(--primary-color);
             border-bottom-width: 2px;
-            border-color: #ec4899; /* border-pink-500 */
         }
         .tab-inactive {
             color: #6b7280; /* text-gray-500 */
         }
     </style>
 </head>
-<body class="bg-pink-50 text-gray-800">
+<body class="text-gray-800">
 
     <div id="app-container" class="max-w-lg mx-auto min-h-screen bg-white shadow-lg relative">
 
         <!-- Welcome Screen -->
         <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center">
             <div class="mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-pink-400"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary-accent"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
             </div>
             <h1 id="couple-names" class="text-3xl font-bold text-gray-800 mb-2">김창회 & 김한별</h1>
             <p class="text-lg text-gray-600 mb-8">Wedding Photo Mission</p>
             <p id="welcome-message" class="mb-10">두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!</p>
-            <button id="start-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+            <button id="start-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
                 참여하기
             </button>
         </div>
@@ -75,7 +100,7 @@
         <!-- Main Content (Missions & Gallery) -->
         <div id="main-screen" class="hidden p-4 pb-20">
             <header class="text-center py-4">
-                <h1 class="text-2xl font-bold text-pink-500">Wedding Photo Mission</h1>
+                <h1 class="text-2xl font-bold text-primary">Wedding Photo Mission</h1>
                 <p id="mission-reward-message" class="text-gray-500 mt-1">미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!</p>
             </header>
 
@@ -90,10 +115,10 @@
             </div>
             
             <div id="gift-view" class="hidden text-center p-8">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-pink-400 mb-4"><path d="M20 12v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4"></path><path d="m18 5 4 4"></path><path d="m18 9-4-4"></path><path d="M12 12H8v4h4Z"></path><path d="M12 8H8v4h4Z"></path><path d="M16 12h-4v4h4Z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-primary-accent mb-4"><path d="M20 12v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4"></path><path d="m18 5 4 4"></path><path d="m18 9-4-4"></path><path d="M12 12H8v4h4Z"></path><path d="M12 8H8v4h4Z"></path><path d="M16 12h-4v4h4Z"></path></svg>
                 <h2 class="text-xl font-bold mb-2">사진 선물하기</h2>
                 <p class="text-gray-600 mb-6">미션과 관계없이, 두 사람에게 선물하고 싶은<br>결혼식의 모든 순간을 자유롭게 공유해주세요.</p>
-                <button id="gift-upload-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                <button id="gift-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
                     사진 올리기
                 </button>
             </div>
@@ -111,16 +136,16 @@
                 <div id="image-preview-container" class="w-full h-32 flex items-center justify-center rounded-md mb-4 border bg-gray-100 overflow-hidden">
                     <p id="image-preview-text" class="text-gray-500"></p>
                 </div>
-                <input type="text" id="uploader-name" placeholder="이름을 입력해주세요 (예: 홍길동)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-pink-500 focus:border-pink-500">
+                <input type="text" id="uploader-name" placeholder="이름을 입력해주세요 (예: 홍길동)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-primary focus:border-primary">
                 <div class="flex gap-2">
                     <button id="cancel-upload-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
-                    <button id="submit-upload-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded-lg">사진 올리기</button>
+                    <button id="submit-upload-btn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">사진 올리기</button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Admin Features (Hidden by default) -->
+    <!-- Admin Features -->
     <button id="admin-fab" class="admin-fab bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg hidden">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9z"></path><line x1="12" y1="2" x2="12" y2="22"></line></svg>
     </button>
@@ -128,12 +153,13 @@
         <div class="bg-white rounded-lg w-full max-w-md p-6 fade-in max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-bold mb-4 text-purple-600">관리자 설정</h2>
             
+            <h3 class="text-lg font-bold mb-3">콘텐츠 설정</h3>
             <div class="mb-4">
                 <label for="admin-couple-names" class="block text-sm font-medium text-gray-700">신랑 & 신부 이름</label>
                 <input type="text" id="admin-couple-names" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
             </div>
             <div class="mb-4">
-                <label for="admin-welcome-message" class="block text-sm font-medium text-gray-700">환영 메시지 (줄바꿈은 &lt;br&gt; 사용)</label>
+                <label for="admin-welcome-message" class="block text-sm font-medium text-gray-700">환영 메시지</label>
                 <textarea id="admin-welcome-message" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
             </div>
              <div class="mb-4">
@@ -141,6 +167,25 @@
                 <textarea id="admin-reward-message" rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
             </div>
             <hr class="my-6">
+
+            <h3 class="text-lg font-bold mb-3">디자인 설정</h3>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="admin-primary-color" class="block text-sm font-medium text-gray-700">대표 색상</label>
+                    <input type="color" id="admin-primary-color" class="mt-1 h-10 block w-full border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="admin-font-family" class="block text-sm font-medium text-gray-700">글꼴</label>
+                    <select id="admin-font-family" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 h-10">
+                        <option value="'Noto Sans KR', sans-serif">Noto Sans KR (기본)</option>
+                        <option value="'Nanum Myeongjo', serif">Nanum Myeongjo (명조체)</option>
+                        <option value="'Gowun Dodum', sans-serif">Gowun Dodum (손글씨체)</option>
+                        <option value="'Stylish', sans-serif">Stylish (스타일리시)</option>
+                    </select>
+                </div>
+            </div>
+            <hr class="my-6">
+
             <h3 class="text-lg font-bold mb-3">미션 관리</h3>
             <div id="admin-mission-list" class="space-y-3"></div>
             <button id="add-mission-btn" class="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">미션 추가하기</button>
@@ -153,6 +198,19 @@
             <button id="admin-reset-btn" class="mt-4 w-full text-sm text-red-500 hover:underline">모든 설정 및 사진 초기화</button>
         </div>
     </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-sm p-6 fade-in">
+            <h2 id="confirm-title" class="text-xl font-bold mb-2">정말 진행하시겠습니까?</h2>
+            <p id="confirm-message" class="text-gray-600 mb-6">이 작업은 되돌릴 수 없습니다.</p>
+            <div class="flex gap-2">
+                <button id="confirm-cancel-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
+                <button id="confirm-ok-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">확인</button>
+            </div>
+        </div>
+    </div>
+
 
     <input type="file" id="photo-upload-input" class="hidden" accept="image/*" multiple>
     <div id="toast-notification" class="toast"></div>
@@ -160,14 +218,19 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- CONFIG & STATE ---
-        const ADMIN_PASSWORD = '1234'; // 관리자 비밀번호
+        const ADMIN_PASSWORD = '1234';
         let currentUploadContext = { type: null, id: null };
         let selectedFiles = [];
+        let confirmCallback = null;
 
         let siteContent = {
             coupleNames: "김창회 & 김한별",
             welcomeMessage: "두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!",
             rewardMessage: "미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!",
+            theme: {
+                primaryColor: '#ec4899',
+                fontFamily: "'Noto Sans KR', sans-serif"
+            },
             missions: [
                 { id: 1, title: "신랑 입장", description: "늠름하게 입장하는 신랑의 모습을 담아주세요!" },
                 { id: 2, title: "신부 입장", description: "세상에서 가장 아름다운 신부의 입장 순간을 포착해주세요." },
@@ -185,6 +248,7 @@
 
         // --- DOM Elements ---
         const dom = {
+            appContainer: document.getElementById('app-container'),
             welcomeScreen: document.getElementById('welcome-screen'),
             mainScreen: document.getElementById('main-screen'),
             startBtn: document.getElementById('start-btn'),
@@ -221,15 +285,48 @@
             adminCancelBtn: document.getElementById('admin-cancel-btn'),
             adminSaveBtn: document.getElementById('admin-save-btn'),
             adminResetBtn: document.getElementById('admin-reset-btn'),
+            adminPrimaryColor: document.getElementById('admin-primary-color'),
+            adminFontFamily: document.getElementById('admin-font-family'),
+            // Confirm Modal elements
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmTitle: document.getElementById('confirm-title'),
+            confirmMessage: document.getElementById('confirm-message'),
+            confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
+            confirmOkBtn: document.getElementById('confirm-ok-btn'),
         };
 
         // --- Functions ---
         const showToast = (message) => {
             dom.toast.textContent = message;
             dom.toast.classList.add('show');
-            setTimeout(() => {
-                dom.toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => { dom.toast.classList.remove('show'); }, 3000);
+        };
+        
+        const darkenColor = (hex, percent) => {
+            let [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
+            const factor = 1 - percent / 100;
+            r = Math.max(0, Math.floor(r * factor));
+            g = Math.max(0, Math.floor(g * factor));
+            b = Math.max(0, Math.floor(b * factor));
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        };
+
+        const lightenColor = (hex, percent) => {
+             let [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
+             const factor = percent / 100;
+             r = Math.min(255, Math.floor(r + (255 - r) * factor));
+             g = Math.min(255, Math.floor(g + (255 - g) * factor));
+             b = Math.min(255, Math.floor(b + (255 - b) * factor));
+             return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        const applyTheme = (theme) => {
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', theme.primaryColor);
+            root.style.setProperty('--primary-color-dark', darkenColor(theme.primaryColor, 10));
+            root.style.setProperty('--primary-color-accent', lightenColor(theme.primaryColor, 15));
+            root.style.setProperty('--primary-color-light-bg', lightenColor(theme.primaryColor, 95));
+            root.style.setProperty('--font-family', theme.fontFamily);
         };
 
         const saveData = () => {
@@ -241,7 +338,13 @@
             const savedContent = localStorage.getItem('weddingMissionContent');
             const savedPhotos = localStorage.getItem('weddingMissionPhotos');
             if (savedContent) {
-                siteContent = JSON.parse(savedContent);
+                const parsedContent = JSON.parse(savedContent);
+                // Deep merge theme object to ensure all properties are present
+                const defaultTheme = siteContent.theme || {};
+                const savedTheme = parsedContent.theme || {};
+                parsedContent.theme = { ...defaultTheme, ...savedTheme };
+                // Merge the rest of the content
+                siteContent = {...siteContent, ...parsedContent};
             }
             if (savedPhotos) {
                 uploadedPhotos = JSON.parse(savedPhotos);
@@ -261,10 +364,10 @@
                             <p class="text-gray-600 text-sm">${mission.description}</p>
                         </div>
                         <div class="text-right">
-                             <div class="text-xs text-pink-500 font-semibold mb-1">
+                             <div class="text-xs text-primary font-semibold mb-1">
                                 ${photosForMission.length} 장
                             </div>
-                            <button data-mission-id="${mission.id}" class="upload-btn bg-pink-100 text-pink-600 hover:bg-pink-200 font-bold py-2 px-3 rounded-md text-sm">
+                            <button data-mission-id="${mission.id}" class="upload-btn bg-primary-light-bg text-primary hover\:bg-primary-dark hover:text-white font-bold py-2 px-3 rounded-md text-sm transition-colors">
                                 올리기
                             </button>
                         </div>
@@ -282,7 +385,6 @@
                 dom.galleryPlaceholder.classList.add('hidden');
                 dom.galleryGrid.classList.remove('hidden');
                 dom.galleryGrid.innerHTML = '';
-                // Sort by newest first
                 [...uploadedPhotos].reverse().forEach(photo => {
                     const imgContainer = document.createElement('div');
                     imgContainer.className = 'aspect-square bg-gray-200';
@@ -296,6 +398,7 @@
         };
 
         const updateUI = () => {
+            applyTheme(siteContent.theme);
             dom.coupleNames.innerHTML = siteContent.coupleNames;
             dom.welcomeMessage.innerHTML = siteContent.welcomeMessage;
             dom.missionRewardMessage.innerHTML = siteContent.rewardMessage;
@@ -345,25 +448,19 @@
         const handleFileUpload = async (files) => {
             if (files.length === 0) return;
             selectedFiles = Array.from(files);
-
             dom.imagePreviewText.textContent = `${selectedFiles.length}개의 사진 선택됨`;
-
-            // Show preview of the first image
             const previewImage = dom.imagePreviewContainer.querySelector('img');
-            if (previewImage) {
-                previewImage.remove();
-            }
+            if (previewImage) previewImage.remove();
             
-            const firstFile = selectedFiles[0];
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'w-full h-full object-contain';
                 dom.imagePreviewContainer.appendChild(img);
-                dom.imagePreviewText.textContent = ''; // Clear text
+                dom.imagePreviewText.textContent = '';
             }
-            reader.readAsDataURL(firstFile);
+            reader.readAsDataURL(selectedFiles[0]);
         };
         
         const readFileAsDataURL = (file) => {
@@ -374,19 +471,30 @@
                 reader.readAsDataURL(file);
             });
         };
+        
+        const showConfirm = (title, message, callback) => {
+            dom.confirmTitle.textContent = title;
+            dom.confirmMessage.innerHTML = message;
+            confirmCallback = callback;
+            dom.confirmModal.classList.remove('hidden');
+        };
+        
+        const closeConfirm = () => {
+            dom.confirmModal.classList.add('hidden');
+            confirmCallback = null;
+        };
 
-        // --- Admin Functions ---
         const openAdminModal = () => {
             dom.adminCoupleNames.value = siteContent.coupleNames.replace(/<br>/g, '');
             dom.adminWelcomeMessage.value = siteContent.welcomeMessage.replace(/<br>/g, '\n');
             dom.adminRewardMessage.value = siteContent.rewardMessage.replace(/<br>/g, '\n');
+            dom.adminPrimaryColor.value = siteContent.theme.primaryColor;
+            dom.adminFontFamily.value = siteContent.theme.fontFamily;
             renderAdminMissions();
             dom.adminModal.classList.remove('hidden');
         };
         
-        const closeAdminModal = () => {
-            dom.adminModal.classList.add('hidden');
-        };
+        const closeAdminModal = () => dom.adminModal.classList.add('hidden');
 
         const renderAdminMissions = () => {
             dom.adminMissionList.innerHTML = '';
@@ -431,22 +539,12 @@
             dom.photoUploadInput.click();
         });
 
-        dom.photoUploadInput.addEventListener('change', (e) => {
-            handleFileUpload(e.target.files);
-        });
-
+        dom.photoUploadInput.addEventListener('change', (e) => handleFileUpload(e.target.files));
         dom.cancelUploadBtn.addEventListener('click', closeUploadModal);
 
         dom.submitUploadBtn.addEventListener('click', async () => {
-            const uploaderName = dom.uploaderName.value.trim();
-            if (!uploaderName) {
-                showToast('이름을 입력해주세요.');
-                return;
-            }
-            if (selectedFiles.length === 0) {
-                showToast('사진을 선택해주세요.');
-                return;
-            }
+            if (!dom.uploaderName.value.trim()) return showToast('이름을 입력해주세요.');
+            if (selectedFiles.length === 0) return showToast('사진을 선택해주세요.');
 
             dom.submitUploadBtn.disabled = true;
             dom.submitUploadBtn.textContent = '업로드 중...';
@@ -454,19 +552,11 @@
             for (const file of selectedFiles) {
                 try {
                     const photoData = await readFileAsDataURL(file);
-                    const newPhoto = {
-                        id: Date.now() + Math.random(),
-                        uploader: uploaderName,
-                        data: photoData,
-                        type: currentUploadContext.type,
-                        missionId: currentUploadContext.id,
-                        timestamp: new Date().toISOString()
-                    };
-                    uploadedPhotos.push(newPhoto);
-                } catch (error) {
-                    console.error("File read error:", error);
-                    showToast("사진을 읽는 중 오류가 발생했습니다.");
-                }
+                    uploadedPhotos.push({
+                        id: Date.now() + Math.random(), uploader: dom.uploaderName.value.trim(), data: photoData,
+                        type: currentUploadContext.type, missionId: currentUploadContext.id, timestamp: new Date().toISOString()
+                    });
+                } catch (error) { showToast("사진을 읽는 중 오류가 발생했습니다."); }
             }
 
             saveData();
@@ -490,8 +580,8 @@
         });
 
         dom.adminMissionList.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-mission-btn')) {
-                const button = e.target.closest('.remove-mission-btn');
+            const button = e.target.closest('.remove-mission-btn');
+            if (button) {
                 const idToRemove = parseInt(button.dataset.id);
                 siteContent.missions = siteContent.missions.filter(m => m.id !== idToRemove);
                 renderAdminMissions();
@@ -502,14 +592,13 @@
             siteContent.coupleNames = dom.adminCoupleNames.value;
             siteContent.welcomeMessage = dom.adminWelcomeMessage.value.replace(/\n/g, '<br>');
             siteContent.rewardMessage = dom.adminRewardMessage.value.replace(/\n/g, '<br>');
+            siteContent.theme.primaryColor = dom.adminPrimaryColor.value;
+            siteContent.theme.fontFamily = dom.adminFontFamily.value;
 
             document.querySelectorAll('.admin-mission-input').forEach(input => {
-                const id = parseInt(input.dataset.id);
-                const field = input.dataset.field;
+                const id = parseInt(input.dataset.id), field = input.dataset.field;
                 const mission = siteContent.missions.find(m => m.id === id);
-                if (mission) {
-                    mission[field] = input.value;
-                }
+                if (mission) mission[field] = input.value;
             });
             
             saveData();
@@ -519,12 +608,22 @@
         });
         
         dom.adminResetBtn.addEventListener('click', () => {
-             if (confirm('정말로 모든 설정과 업로드된 사진을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-                localStorage.removeItem('weddingMissionContent');
-                localStorage.removeItem('weddingMissionPhotos');
-                // Hard reload to reset state completely
-                window.location.reload();
+             showConfirm(
+                '설정 및 사진 초기화',
+                '정말로 모든 설정과 업로드된 사진을 초기화하시겠습니까?<br><strong>이 작업은 되돌릴 수 없습니다.</strong>',
+                () => {
+                    localStorage.clear();
+                    window.location.reload();
+                }
+            );
+        });
+        
+        dom.confirmCancelBtn.addEventListener('click', closeConfirm);
+        dom.confirmOkBtn.addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback();
             }
+            closeConfirm();
         });
 
         const checkAdminMode = () => {
@@ -536,7 +635,6 @@
                 } else if(password) {
                     alert('비밀번호가 틀렸습니다.');
                 }
-                 // Remove hash to prevent re-prompt on reload
                 history.pushState("", document.title, window.location.pathname + window.location.search);
             }
         };
