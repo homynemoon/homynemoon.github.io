@@ -240,10 +240,13 @@
         const loadData = async () => {
             try {
                 const docSnap = await getDoc(configRef);
-                if (docSnap.exists()) { 
-                    siteContent = { ...siteContent, ...docSnap.data() }; 
+                if (docSnap.exists()) {
+                    const savedData = docSnap.data();
+                    const missions = (Array.isArray(savedData.missions) && savedData.missions.length > 0) ? savedData.missions : siteContent.missions;
+                    const theme = savedData.theme ? { ...siteContent.theme, ...savedData.theme } : siteContent.theme;
+                    siteContent = { ...siteContent, ...savedData, missions, theme };
                 } else {
-                    await setDoc(configRef, siteContent); // Create initial config if it doesn't exist
+                    await setDoc(configRef, siteContent);
                 }
             } catch (error) { console.error("Error loading config:", error); }
             userName = localStorage.getItem('weddingMissionUserName') || '';
@@ -255,9 +258,7 @@
 
         const listenForPhotos = () => {
             if (unsubscribePhotos) unsubscribePhotos();
-            
             const q = isAdmin ? query(photosRef) : query(photosRef, where("uploaderId", "==", userId || ''));
-            
             unsubscribePhotos = onSnapshot(q, (snapshot) => {
                 uploadedPhotos = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
                 uploadedPhotos.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
