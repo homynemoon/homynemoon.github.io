@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Photo Mission</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s, bottom 0.3s;
+        }
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+        /* Admin-specific styles */
+        .admin-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 90;
+        }
+    </style>
+</head>
+<body class="bg-pink-50 text-gray-800">
+
+    <div id="app-container" class="max-w-lg mx-auto min-h-screen bg-white shadow-lg relative">
+
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="flex flex-col items-center justify-center h-screen p-8 text-center">
+            <div class="mb-8">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-pink-400"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+            </div>
+            <h1 id="couple-names" class="text-3xl font-bold text-gray-800 mb-2">경훈 & 지혜</h1>
+            <p class="text-lg text-gray-600 mb-8">Wedding Photo Mission</p>
+            <p id="welcome-message" class="mb-10">두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!</p>
+            <button id="start-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">
+                포토 미션 시작하기
+            </button>
+        </div>
+
+        <!-- Main Content (Missions & Gallery) -->
+        <div id="main-screen" class="hidden p-4 pb-20">
+            <header class="text-center py-4">
+                <h1 class="text-2xl font-bold text-pink-500">Wedding Photo Mission</h1>
+                <p id="mission-reward-message" class="text-gray-500 mt-1">미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!</p>
+            </header>
+
+            <div class="flex justify-center border-b-2 border-gray-200 mb-4">
+                <button id="missions-tab" class="flex-1 py-3 text-center font-semibold text-pink-500 border-b-2 border-pink-500">미션 목록</button>
+                <button id="gallery-tab" class="flex-1 py-3 text-center font-semibold text-gray-500">실시간 갤러리</button>
+            </div>
+
+            <div id="missions-view">
+                <div id="mission-list" class="space-y-3"></div>
+            </div>
+
+            <div id="gallery-view" class="hidden">
+                <p id="gallery-placeholder" class="text-center text-gray-500 py-16">아직 공유된 사진이 없어요.<br>첫 번째 미션 사진을 올려주세요!</p>
+                <div id="gallery-grid" class="grid grid-cols-3 gap-1"></div>
+            </div>
+        </div>
+
+        <!-- Upload Modal -->
+        <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+            <div class="bg-white rounded-lg w-full max-w-sm p-6 fade-in">
+                <h2 id="modal-title" class="text-xl font-bold mb-4">미션 사진 업로드</h2>
+                <img id="image-preview" src="" alt="Image preview" class="w-full h-48 object-cover rounded-md mb-4 border">
+                <input type="text" id="uploader-name" placeholder="이름을 입력해주세요 (예: 홍길동)" class="w-full border-gray-300 rounded-md p-2 mb-4 focus:ring-pink-500 focus:border-pink-500">
+                <div class="flex gap-2">
+                    <button id="cancel-upload-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
+                    <button id="submit-upload-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded-lg">사진 올리기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Features (Hidden by default) -->
+    <button id="admin-fab" class="admin-fab bg-purple-600 hover:bg-purple-700 text-white rounded-full p-3 shadow-lg hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9z"></path><line x1="12" y1="2" x2="12" y2="22"></line></svg>
+    </button>
+    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg w-full max-w-md p-6 fade-in max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 text-purple-600">관리자 설정</h2>
+            
+            <div class="mb-4">
+                <label for="admin-couple-names" class="block text-sm font-medium text-gray-700">신랑 & 신부 이름</label>
+                <input type="text" id="admin-couple-names" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+            </div>
+            <div class="mb-4">
+                <label for="admin-welcome-message" class="block text-sm font-medium text-gray-700">환영 메시지 (줄바꿈은 &lt;br&gt; 사용)</label>
+                <textarea id="admin-welcome-message" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
+            </div>
+            <hr class="my-6">
+            <h3 class="text-lg font-bold mb-3">미션 관리</h3>
+            <div id="admin-mission-list" class="space-y-3"></div>
+            <button id="add-mission-btn" class="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">미션 추가하기</button>
+            <hr class="my-6">
+            
+            <div class="flex gap-2 mt-6">
+                <button id="admin-cancel-btn" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">취소</button>
+                <button id="admin-save-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg">변경사항 저장</button>
+            </div>
+            <button id="admin-reset-btn" class="mt-4 w-full text-sm text-red-500 hover:underline">모든 설정 초기화</button>
+        </div>
+    </div>
+
+    <input type="file" id="photo-upload-input" class="hidden" accept="image/*">
+    <div id="toast-notification" class="toast"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIG & STATE ---
+        const ADMIN_PASSWORD = '1234'; // 관리자 비밀번호
+        let isAdmin = false;
+        let currentMissionId = null;
+        let photoData = {}; // { missionId: { photo, uploader } }
+
+        let siteContent = {
+            coupleNames: "경훈 & 지혜",
+            welcomeMessage: "두 사람의 가장 행복한 날,<br>소중한 순간들을 여러분의 시선으로 담아주세요!",
+            rewardMessage: "미션을 완료하고 두 사람에게 보여주시면 특별한 선물을 드려요!",
+            missions: [
+                { id: 1, title: "신랑&신부의 행복한 미소", description: "두 사람이 가장 환하게 웃는 순간을 포착해주세요!" },
+                { id: 2, title: "오늘의 주인공, 부모님", description: "양가 부모님의 따뜻한 뒷모습이나 미소를 담아주세요." },
+                { id: 3, title: "세상에서 가장 맛있는 뷔페", description: "가장 맛있어 보이는 음식 사진을 찍어주세요!" },
+                { id: 4, title: "결혼식을 빛내준 친구들", description: "함께 온 친구, 동료와 함께 찍은 사진을 공유해주세요." },
+                { id: 5, title: "신부의 아름다운 드레스", description: "신부의 드레스 자태가 가장 잘 나온 사진을 찍어주세요." },
+                { id: 6, title: "자유 포토 타임!", description: "결혼식의 어떤 순간이든 자유롭게 찍어서 공유해주세요." },
+            ]
+        };
+
+        // --- DOM Elements ---
+        const dom = {
+            title: document.querySelector('title'),
+            startBtn: document.getElementById('start-btn'),
+            welcomeScreen: document.getElementById('welcome-screen'),
+            mainScreen: document.getElementById('main-screen'),
+            missionsTab: document.getElementById('missions-tab'),
+            galleryTab: document.getElementById('gallery-tab'),
+            missionsView: document.getElementById('missions-view'),
+            galleryView: document.getElementById('gallery-view'),
+            missionList: document.getElementById('mission-list'),
+            galleryGrid: document.getElementById('gallery-grid'),
+            galleryPlaceholder: document.getElementById('gallery-placeholder'),
+            uploadModal: document.getElementById('upload-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            imagePreview: document.getElementById('image-preview'),
+            uploaderNameInput: document.getElementById('uploader-name'),
+            cancelUploadBtn: document.getElementById('cancel-upload-btn'),
+            submitUploadBtn: document.getElementById('submit-upload-btn'),
+            photoUploadInput: document.getElementById('photo-upload-input'),
+            toast: document.getElementById('toast-notification'),
+            // UI Text Elements
+            coupleNames: document.getElementById('couple-names'),
+            welcomeMessage: document.getElementById('welcome-message'),
+            missionRewardMessage: document.getElementById('mission-reward-message'),
+            // Admin Elements
+            adminFab: document.getElementById('admin-fab'),
+            adminModal: document.getElementById('admin-modal'),
+            adminCoupleNames: document.getElementById('admin-couple-names'),
+            adminWelcomeMessage: document.getElementById('admin-welcome-message'),
+            adminMissionList: document.getElementById('admin-mission-list'),
+            addMissionBtn: document.getElementById('add-mission-btn'),
+            adminCancelBtn: document.getElementById('admin-cancel-btn'),
+            adminSaveBtn: document.getElementById('admin-save-btn'),
+            adminResetBtn: document.getElementById('admin-reset-btn'),
+        };
+
+        // --- DATA HANDLING ---
+        const loadSiteContent = () => {
+            const savedContent = localStorage.getItem('weddingSiteContent');
+            if (savedContent) {
+                siteContent = JSON.parse(savedContent);
+            }
+            const savedPhotos = localStorage.getItem('weddingPhotoData');
+            if(savedPhotos) {
+                photoData = JSON.parse(savedPhotos);
+            }
+        };
+
+        const saveSiteContent = () => {
+            localStorage.setItem('weddingSiteContent', JSON.stringify(siteContent));
+            showToast('설정이 저장되었습니다.');
+        };
+
+        const savePhotoData = () => {
+            localStorage.setItem('weddingPhotoData', JSON.stringify(photoData));
+        }
+
+        // --- UI RENDERING ---
+        const applyContentToUI = () => {
+            dom.title.textContent = `${siteContent.coupleNames}의 웨딩 포토 미션`;
+            dom.coupleNames.textContent = siteContent.coupleNames;
+            dom.welcomeMessage.innerHTML = siteContent.welcomeMessage;
+            dom.missionRewardMessage.textContent = siteContent.rewardMessage;
+            renderMissions();
+        };
+
+        const renderMissions = () => {
+            dom.missionList.innerHTML = '';
+            siteContent.missions.forEach(mission => {
+                const completed = photoData[mission.id];
+                const missionCard = document.createElement('div');
+                missionCard.className = `p-4 rounded-lg shadow-sm transition-all ${completed ? 'bg-pink-100' : 'bg-white border'}`;
+                
+                missionCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold ${completed ? 'text-gray-500 line-through' : 'text-gray-800'}">${mission.title}</h3>
+                            <p class="text-sm text-gray-500">${mission.description}</p>
+                        </div>
+                        ${completed ?
+                            `<div class="text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500 mx-auto"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                <span class="text-xs text-green-600">${completed.uploader} 님</span>
+                            </div>` :
+                            `<button data-mission-id="${mission.id}" class="upload-btn flex-shrink-0 bg-pink-500 text-white rounded-full p-2 hover:bg-pink-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                            </button>`
+                        }
+                    </div>
+                `;
+                dom.missionList.appendChild(missionCard);
+            });
+        };
+
+        const renderGallery = () => {
+            const completedMissions = Object.keys(photoData).map(id => ({
+                ...siteContent.missions.find(m => m.id == id),
+                ...photoData[id]
+            })).filter(m => m.title); // filter out potential mismatches
+            
+            if (completedMissions.length === 0) {
+                dom.galleryPlaceholder.classList.remove('hidden');
+                dom.galleryGrid.innerHTML = '';
+            } else {
+                dom.galleryPlaceholder.classList.add('hidden');
+                dom.galleryGrid.innerHTML = '';
+                completedMissions.forEach(mission => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'relative aspect-square';
+                    galleryItem.innerHTML = `
+                        <img src="${mission.photo}" class="w-full h-full object-cover" alt="${mission.title}">
+                        <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                            ${mission.title} by ${mission.uploader}
+                        </div>
+                    `;
+                    dom.galleryGrid.appendChild(galleryItem);
+                });
+            }
+        };
+        
+        const showToast = (message) => {
+            dom.toast.textContent = message;
+            dom.toast.classList.add('show');
+            setTimeout(() => {
+                dom.toast.classList.remove('show');
+            }, 3000);
+        };
+
+        const switchTab = (tab) => {
+            if (tab === 'missions') {
+                dom.missionsTab.classList.add('text-pink-500', 'border-pink-500');
+                dom.missionsTab.classList.remove('text-gray-500');
+                dom.galleryTab.classList.add('text-gray-500');
+                dom.galleryTab.classList.remove('text-pink-500', 'border-pink-500');
+                dom.missionsView.classList.remove('hidden');
+                dom.galleryView.classList.add('hidden');
+            } else {
+                renderGallery();
+                dom.galleryTab.classList.add('text-pink-500', 'border-pink-500');
+                dom.galleryTab.classList.remove('text-gray-500');
+                dom.missionsTab.classList.add('text-gray-500');
+                dom.missionsTab.classList.remove('text-pink-500', 'border-pink-500');
+                dom.galleryView.classList.remove('hidden');
+                dom.missionsView.classList.add('hidden');
+            }
+        };
+
+        // --- ADMIN FUNCTIONS ---
+        const openAdminModal = () => {
+            dom.adminCoupleNames.value = siteContent.coupleNames;
+            dom.adminWelcomeMessage.value = siteContent.welcomeMessage.replace(/<br>/g, "\n");
+            renderAdminMissions();
+            dom.adminModal.classList.remove('hidden');
+        };
+        
+        const renderAdminMissions = () => {
+            dom.adminMissionList.innerHTML = '';
+            siteContent.missions.forEach(mission => {
+                const missionEditEl = document.createElement('div');
+                missionEditEl.className = 'p-3 border rounded-lg bg-gray-50';
+                missionEditEl.innerHTML = `
+                    <input type="text" data-id="${mission.id}" data-field="title" value="${mission.title}" placeholder="미션 제목" class="w-full font-semibold border-gray-300 rounded-md p-1 mb-1">
+                    <input type="text" data-id="${mission.id}" data-field="description" value="${mission.description}" placeholder="미션 설명" class="w-full text-sm border-gray-300 rounded-md p-1">
+                    <button data-id="${mission.id}" class="remove-mission-btn text-red-500 text-xs hover:underline mt-1">삭제</button>
+                `;
+                dom.adminMissionList.appendChild(missionEditEl);
+            });
+        };
+
+        const handleAdminLogin = () => {
+            const password = prompt("관리자 비밀번호를 입력하세요:");
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                dom.adminFab.classList.remove('hidden');
+                showToast("관리자 모드로 로그인했습니다.");
+            } else if (password) {
+                alert("비밀번호가 틀렸습니다.");
+            }
+        };
+        
+        // --- EVENT LISTENERS ---
+        dom.startBtn.addEventListener('click', () => {
+            dom.welcomeScreen.classList.add('hidden');
+            dom.mainScreen.classList.remove('hidden');
+            dom.mainScreen.classList.add('fade-in');
+        });
+
+        dom.missionsTab.addEventListener('click', () => switchTab('missions'));
+        dom.galleryTab.addEventListener('click', () => switchTab('gallery'));
+
+        dom.missionList.addEventListener('click', (e) => {
+            const uploadBtn = e.target.closest('.upload-btn');
+            if (uploadBtn) {
+                currentMissionId = parseInt(uploadBtn.dataset.missionId);
+                dom.photoUploadInput.click();
+            }
+        });
+
+        dom.photoUploadInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    dom.imagePreview.src = event.target.result;
+                    const mission = siteContent.missions.find(m => m.id === currentMissionId);
+                    dom.modalTitle.textContent = `"${mission.title}"`;
+                    dom.uploadModal.classList.remove('hidden');
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+            dom.photoUploadInput.value = '';
+        });
+
+        dom.cancelUploadBtn.addEventListener('click', () => {
+            dom.uploadModal.classList.add('hidden');
+            currentMissionId = null;
+        });
+
+        dom.submitUploadBtn.addEventListener('click', () => {
+            const uploaderName = dom.uploaderNameInput.value.trim();
+            if (!uploaderName) {
+                showToast('이름을 꼭 입력해주세요!');
+                return;
+            }
+            
+            photoData[currentMissionId] = {
+                photo: dom.imagePreview.src,
+                uploader: uploaderName
+            };
+            savePhotoData();
+
+            dom.uploaderNameInput.value = '';
+            dom.uploadModal.classList.add('hidden');
+            
+            renderMissions();
+            showToast('미션 완료! 사진이 갤러리에 추가되었어요.');
+        });
+
+        // Admin Event Listeners
+        dom.adminFab.addEventListener('click', openAdminModal);
+
+        dom.adminCancelBtn.addEventListener('click', () => dom.adminModal.classList.add('hidden'));
+
+        dom.addMissionBtn.addEventListener('click', () => {
+            const newId = siteContent.missions.length > 0 ? Math.max(...siteContent.missions.map(m => m.id)) + 1 : 1;
+            siteContent.missions.push({ id: newId, title: "", description: "" });
+            renderAdminMissions();
+        });
+
+        dom.adminMissionList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-mission-btn')) {
+                const idToRemove = parseInt(e.target.dataset.id);
+                siteContent.missions = siteContent.missions.filter(m => m.id !== idToRemove);
+                renderAdminMissions();
+            }
+        });
+
+        dom.adminSaveBtn.addEventListener('click', () => {
+            siteContent.coupleNames = dom.adminCoupleNames.value;
+            siteContent.welcomeMessage = dom.adminWelcomeMessage.value.replace(/\n/g, "<br>");
+            
+            const updatedMissions = [];
+            dom.adminMissionList.querySelectorAll('div').forEach(missionEl => {
+                const id = parseInt(missionEl.querySelector('[data-field="title"]').dataset.id);
+                const title = missionEl.querySelector('[data-field="title"]').value;
+                const description = missionEl.querySelector('[data-field="description"]').value;
+                if (title) { // Save only if title is not empty
+                    updatedMissions.push({ id, title, description });
+                }
+            });
+            siteContent.missions = updatedMissions;
+
+            saveSiteContent();
+            applyContentToUI();
+            dom.adminModal.classList.add('hidden');
+        });
+
+        dom.adminResetBtn.addEventListener('click', () => {
+            if(confirm("정말로 모든 설정과 업로드된 사진을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+                localStorage.removeItem('weddingSiteContent');
+                localStorage.removeItem('weddingPhotoData');
+                window.location.reload();
+            }
+        });
+
+        // --- INITIALIZATION ---
+        const initializeApp = () => {
+            loadSiteContent();
+            applyContentToUI();
+            if (window.location.hash === '#admin') {
+                handleAdminLogin();
+            }
+        };
+
+        initializeApp();
+    });
+    </script>
+</body>
+</html>
+
