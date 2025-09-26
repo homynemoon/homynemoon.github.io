@@ -238,17 +238,24 @@
         const applyTheme = (theme) => { const r=document.documentElement.style;r.setProperty('--primary-color',theme.primaryColor);r.setProperty('--primary-color-dark',darkenColor(theme.primaryColor,10));r.setProperty('--primary-color-accent',lightenColor(theme.primaryColor,15));r.setProperty('--primary-color-light-bg',lightenColor(theme.primaryColor,95));r.setProperty('--font-family',theme.fontFamily);};
         
         const loadData = async () => {
+            console.log("Attempting to load data from Firestore...");
             try {
                 const docSnap = await getDoc(configRef);
                 if (docSnap.exists()) {
+                    console.log("Config document found. Merging with defaults.");
                     const savedData = docSnap.data();
                     const missions = (Array.isArray(savedData.missions) && savedData.missions.length > 0) ? savedData.missions : siteContent.missions;
                     const theme = savedData.theme ? { ...siteContent.theme, ...savedData.theme } : siteContent.theme;
                     siteContent = { ...siteContent, ...savedData, missions, theme };
                 } else {
-                    await setDoc(configRef, siteContent);
+                    console.log("No config document found. Creating a new one with default data.");
+                    await setDoc(configRef, siteContent).catch(e => console.error("Failed to create initial config:", e));
                 }
-            } catch (error) { console.error("Error loading config:", error); }
+                 console.log("Data loaded successfully.");
+            } catch (error) { 
+                console.error("Critical error during config load:", error);
+                showToast("데이터 로딩에 실패했습니다.");
+            }
             userName = localStorage.getItem('weddingMissionUserName') || '';
             updateUI();
             listenForPhotos();
@@ -545,24 +552,33 @@
         
         // --- Initial Load ---
         try {
+            console.log("Firebase config loaded.");
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            console.log("Firebase services initialized.");
 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wedding-app';
             configRef = doc(db, `/artifacts/${appId}/public/data/config`, "main");
             photosRef = collection(db, `/artifacts/${appId}/public/data/photos`);
 
             onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    await loadData();
-                    checkAdminMode();
-                } else {
-                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) { await signInWithCustomToken(auth, token); }
-                    else { await signInAnonymously(auth); }
+                try {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Auth state changed. User authenticated with UID:", userId);
+                        await loadData();
+                        checkAdminMode();
+                    } else {
+                        console.log("No user found, attempting sign-in.");
+                        const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        if (token) { await signInWithCustomToken(auth, token); }
+                        else { await signInAnonymously(auth); }
+                    }
+                } catch(e) {
+                     console.error("Error within onAuthStateChanged callback:", e);
+                     dom.loadingOverlay.innerHTML = "<p>오류가 발생했습니다. 새로고침 해주세요.</p>";
                 }
             });
         } catch(e) {
